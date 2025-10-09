@@ -14,18 +14,34 @@ class Player:
         self.h = h
         self.tilesx = tilesx
         self.tilesy = tilesy
-        self.image = pygame.image.load(image)
+        self.frontImage = pygame.image.load("FrontPOV.png")
+        self.backImage = pygame.image.load("BackPOV.png")
+        self.sideImage = pygame.image.load("SidePOV.png")
+        self.image = self.frontImage
         self.image = pygame.transform.scale(self.image, [w, h])
         self.image.set_colorkey([0,0,0])
         self.state = "idle"
         self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
         self.aniframes = 0
         self.pastaniframes = 0
+        self.facing = "Front"
+        self.reverseSideImage = pygame.transform.flip(self.sideImage, True, False)
+
 
 
     def render(self, screen):
         #pygame.draw.rect(screen, "red", self.rect)
-        screen.blit(self.image, self.rect)
+        if self.state == "movingdown":
+            screen.blit(self.frontImage, self.rect)
+        if self.state == "movingleft":
+            screen.blit(self.reverseSideImage, self.rect)
+        if self.state == "movingright":
+            screen.blit(self.sideImage, self.rect)
+        if self.state == "movingup":
+            screen.blit(self.backImage, self.rect)
+        if self.state == "idle":
+            screen.blit(self.image, self.rect)
+
 
     def checkcollisions(self, walls, xvel, yvel, pushables, tilesx, tilesy, doors, robots):
         if self.coordsx + xvel < 0 or self.coordsx + xvel > tilesx - 1 or self.coordsy + yvel < 0 or self.coordsy + yvel > tilesy - 1:
@@ -77,6 +93,8 @@ class Player:
                 if self.checkcollisions(walls, 0, -1, pushables, self.tilesx, self.tilesy, doors, robots):
                     self.state = "movingup"
                     self.pastaniframes = self.aniframes
+
+
             if pygame.key.get_pressed()[pygame.K_DOWN]:
                 if self.checkcollisions(walls, 0, 1, pushables, self.tilesx, self.tilesy, doors, robots):
                     self.state = "movingdown"
