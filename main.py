@@ -1,3 +1,5 @@
+import math
+
 import pygame
 from grid import Grid
 from player import Player, Flag, Wall, Pushable, Door, Robot, ProgramHeader
@@ -53,7 +55,7 @@ def generatelevel(index):
                 pushables.append(Pushable(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "Pushables.png", 0, "wait"))
             elif currenttile == 5:
                 pushables.append(Pushable(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "Pushables.png", 3))
-            elif type(currenttile) == type([5,6,7,8,9]):
+            elif type(currenttile) == type([6,7]):
                 if currenttile[0] == "door":
                     doors.append(Door(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "Doors.png", currenttile[1], currenttile[2]))
                 if currenttile[0] == "robot":
@@ -120,12 +122,15 @@ while isrunning:
             wall.render(screen)
     if pushables != []:
         for pushable in pushables:
-            pushable.update(screen)
+            if str(type(pushable)) == "<class 'player.ProgramHeader'>":
+                pushable.update(screen, pushables, robots)
+            else:
+                pushable.update(screen)
             if checkcrush(pushable, doors):
                 pushables.remove(pushable)
     if robots != []:
         for robot in robots:
-            robot.update(screen, walls, pushables, doors)
+            robot.update(screen, walls, pushables, doors, player)
             if checkcrush(robot, doors):
                 robots.remove(robot)
     if player != None:

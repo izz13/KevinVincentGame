@@ -6,7 +6,6 @@ from pygame import PixelArray
 
 WIDTH = 800
 HEIGTH = 640
-
 class Player:
     def __init__(self, coordsx, coordsy, w, h, tilesx, tilesy, image):
         self.coordsx = coordsx
@@ -32,38 +31,36 @@ class Player:
         if self.coordsx + xvel < 0 or self.coordsx + xvel > tilesx - 1 or self.coordsy + yvel < 0 or self.coordsy + yvel > tilesy - 1:
             return False
         if walls == []:
-            return True
-        else:
             for obstacle in walls:
                 if [self.coordsx + xvel, self.coordsy + yvel] == [obstacle.coordsx, obstacle.coordsy]:
                     return False
-            for door in doors:
-                if [self.coordsx + xvel, self.coordsy + yvel] == [door.coordsx, door.coordsy] and door.frame == 1:
+        for door in doors:
+            if [self.coordsx + xvel, self.coordsy + yvel] == [door.coordsx, door.coordsy] and door.frame == 1:
+                return False
+        if pushables != []:
+            for pushable in pushables + robots:
+                if math.dist([self.coordsx + xvel, self.coordsy + yvel], [pushable.coordsx, pushable.coordsy]) <= 0.00000001:
+                    for obstacle in walls + pushables + robots:
+                        if [self.coordsx + xvel * 2, self.coordsy + yvel * 2] == [obstacle.coordsx, obstacle.coordsy]:
+                            return False
+                        if self.coordsx + xvel * 2 < 0 or self.coordsx + xvel * 2 > tilesx - 1 or self.coordsy + yvel * 2 < 0 or self.coordsy + yvel * 2 > tilesy - 1:
+                            return False
+                    for obstacle in doors:
+                        if [self.coordsx + xvel * 2, self.coordsy + yvel * 2] == [obstacle.coordsx, obstacle.coordsy] and obstacle.frame == 1:
+                            return False
+        if robots != []:
+            for robot in robots:
+                if [self.coordsx + xvel, self.coordsy + yvel] == [robot.coordsx, robot.coordsy] and robot.state != "idle":
                     return False
-            if pushables != []:
-                for pushable in pushables + robots:
-                    if math.dist([self.coordsx + xvel, self.coordsy + yvel], [pushable.coordsx, pushable.coordsy]) <= 0.00000001:
-                        for obstacle in walls + pushables + robots:
-                            if [self.coordsx + xvel * 2, self.coordsy + yvel * 2] == [obstacle.coordsx, obstacle.coordsy]:
-                                return False
-                            if self.coordsx + xvel * 2 < 0 or self.coordsx + xvel * 2 > tilesx - 1 or self.coordsy + yvel * 2 < 0 or self.coordsy + yvel * 2 > tilesy - 1:
-                                return False
-                        for obstacle in doors:
-                            if [self.coordsx + xvel * 2, self.coordsy + yvel * 2] == [obstacle.coordsx, obstacle.coordsy] and obstacle.frame == 1:
-                                return False
-            if robots != []:
-                for robot in robots:
-                    if [self.coordsx + xvel, self.coordsy + yvel] == [robot.coordsx, robot.coordsy] and robot.state != "idle":
-                        return False
-            return True
+        return True
     def updatepush(self, pushables, robots, xvel, yvel): #This took way to long 😭
         if pushables != []:
             for pushable in pushables:
                 if math.dist([self.coordsx + xvel, self.coordsy + yvel], [pushable.coordsx, pushable.coordsy]) <= 0.00000001:
                     pushable.move(xvel / 15, yvel / 15)
-                if self.aniframes - self.pastaniframes == 15:
-                    pushable.coordsx = round(pushable.coordsx)
-                    pushable.coordsy = round(pushable.coordsy)
+                    if self.aniframes - self.pastaniframes == 15:
+                        pushable.coordsx = round(pushable.coordsx)
+                        pushable.coordsy = round(pushable.coordsy)
         if robots != []:
             for robot in robots:
                 if math.dist([self.coordsx + xvel, self.coordsy + yvel], [robot.coordsx, robot.coordsy]) <= 0.00000001:
@@ -260,61 +257,57 @@ class Robot:
             # pygame.draw.rect(screen, "red", self.rect)
             screen.blit(self.image, self.rect)
 
-        def checkcollisions(self, walls, xvel, yvel, pushables, tilesx, tilesy, doors):
+        def checkcollisions(self, walls, xvel, yvel, pushables, tilesx, tilesy, doors, player):
             if self.coordsx + xvel < 0 or self.coordsx + xvel > tilesx - 1 or self.coordsy + yvel < 0 or self.coordsy + yvel > tilesy - 1:
                 return False
             if walls == []:
-                return True
-            else:
-                for obstacle in walls:
+                for obstacle in walls + [player]:
                     if [self.coordsx + xvel, self.coordsy + yvel] == [obstacle.coordsx, obstacle.coordsy]:
                         return False
-                for door in doors:
-                    if [self.coordsx + xvel, self.coordsy + yvel] == [door.coordsx, door.coordsy] and door.frame == 1:
-                        return False
-                if pushables != []:
-                    for pushable in pushables:
-                        if math.dist([self.coordsx + xvel, self.coordsy + yvel],
-                                     [pushable.coordsx, pushable.coordsy]) <= 0.00000001:
-                            for obstacle in walls + pushables:
-                                if [self.coordsx + xvel * 2, self.coordsy + yvel * 2] == [obstacle.coordsx,
-                                                                                          obstacle.coordsy]:
-                                    return False
-                                if self.coordsx + xvel * 2 < 0 or self.coordsx + xvel * 2 > tilesx - 1 or self.coordsy + yvel * 2 < 0 or self.coordsy + yvel * 2 > tilesy - 1:
-                                    return False
-                            for obstacle in doors:
-                                if [self.coordsx + xvel * 2, self.coordsy + yvel * 2] == [obstacle.coordsx, obstacle.coordsy] and obstacle.frame == 1:
-                                    return False
-
-                return True
-
-        def updatepush(self, pushables, xvel, yvel):
+            for door in doors:
+                if [self.coordsx + xvel, self.coordsy + yvel] == [door.coordsx, door.coordsy] and door.frame == 1:
+                    return False
             if pushables != []:
                 for pushable in pushables:
-                    if math.dist([self.coordsx + xvel, self.coordsy + yvel],
-                                 [pushable.coordsx, pushable.coordsy]) <= 0.00000001:
-                        pushable.move(xvel / 15, yvel / 15)
-                    if self.aniframes - self.pastaniframes == 15:
-                        pushable.coordsx = round(pushable.coordsx)
-                        pushable.coordsy = round(pushable.coordsy)
+                    if math.dist([self.coordsx + xvel, self.coordsy + yvel], [pushable.coordsx, pushable.coordsy]) <= 0.00000001:
+                        for obstacle in walls + pushables:
+                            if [self.coordsx + xvel * 2, self.coordsy + yvel * 2] == [obstacle.coordsx, obstacle.coordsy]:
+                                return False
+                            if self.coordsx + xvel * 2 < 0 or self.coordsx + xvel * 2 > tilesx - 1 or self.coordsy + yvel * 2 < 0 or self.coordsy + yvel * 2 > tilesy - 1:
+                                return False
+                        for obstacle in doors:
+                            if [self.coordsx + xvel * 2, self.coordsy + yvel * 2] == [obstacle.coordsx, obstacle.coordsy] and obstacle.frame == 1:
+                                return False
 
-        def updatepos(self, walls, pushables, doors):
+            return True
+
+        def updatepush(self, pushables, xvel, yvel):
+            self.checkrect = pygame.rect.Rect(self.coordsx + xvel, self.coordsy + yvel, self.w, self.h)
+            if pushables != []:
+                for pushable in pushables:
+                    if math.dist([self.coordsx + xvel, self.coordsy + yvel], [pushable.coordsx, pushable.coordsy]) <= 0.00000001:
+                        pushable.move(xvel / 15, yvel / 15)
+                        if self.aniframes - self.pastaniframes == 15:
+                            pushable.coordsx = round(pushable.coordsx)
+                            pushable.coordsy = round(pushable.coordsy)
+
+        def updatepos(self, walls, pushables, doors, player):
             self.aniframes += 1
             if self.state == "idle":
                 if self.move == "up":
-                    if self.checkcollisions(walls, 0, -1, pushables, self.tilesx, self.tilesy, doors):
+                    if self.checkcollisions(walls, 0, -1, pushables, self.tilesx, self.tilesy, doors, player):
                         self.state = "movingup"
                         self.pastaniframes = self.aniframes
                 if self.move == "down":
-                    if self.checkcollisions(walls, 0, 1, pushables, self.tilesx, self.tilesy, doors):
+                    if self.checkcollisions(walls, 0, 1, pushables, self.tilesx, self.tilesy, doors, player):
                         self.state = "movingdown"
                         self.pastaniframes = self.aniframes
                 if self.move == "left":
-                    if self.checkcollisions(walls, -1, 0, pushables, self.tilesx, self.tilesy, doors):
+                    if self.checkcollisions(walls, -1, 0, pushables, self.tilesx, self.tilesy, doors, player):
                         self.state = "movingleft"
                         self.pastaniframes = self.aniframes
                 if self.move == "right":
-                    if self.checkcollisions(walls, 1, 0, pushables, self.tilesx, self.tilesy, doors):
+                    if self.checkcollisions(walls, 1, 0, pushables, self.tilesx, self.tilesy, doors, player):
                         self.state = "movingright"
                         self.pastaniframes = self.aniframes
                 self.move = None
@@ -354,8 +347,8 @@ class Robot:
                     self.state = "idle"
             self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
 
-        def update(self, screen, walls, pushables, doors):
-            self.updatepos(walls, pushables, doors)
+        def update(self, screen, walls, pushables, doors, player):
+            self.updatepos(walls, pushables, doors, player)
             self.render(screen)
 
 class ProgramHeader:
@@ -371,25 +364,45 @@ class ProgramHeader:
         self.frame2 = frame2
         # IMAGEBASE
         self.imagebase = self.spritesheet.get_sprite(self.frame1, 32, 32, self.w, self.h)
+        self.imagebase = pygame.transform.rotate(self.imagebase, dir)
+        self.imagebase = pygame.transform.scale(self.imagebase, [self.w, self.h])
         self.pixelarray = PixelArray(self.imagebase)
         self.pixelarray.replace((255, 255, 255), tuple(color))
         self.imagebase = self.pixelarray.make_surface()
-        self.imagebase = pygame.transform.scale(self.imagebase, [self.w, self.h])
-        self.pixelarray = None
-        self.imagebase = pygame.transform.rotate(self.imagebase, dir)
         self.imagebase.set_colorkey([0, 0, 0])
         # IMAGEARROW
-        self.imagearrow = self.spritesheet.get_sprite(self.frame2, 32, 32, self.w, self.h)
-        self.image = pygame.transform.scale(self.imagearrow, [self.w, self.h])
-        self.imagearrow.set_colorkey([0, 0, 0])
-
+        self.imagetop = self.spritesheet.get_sprite(self.frame2, 32, 32, self.w, self.h)
+        self.imagetop = pygame.transform.scale(self.imagetop, [self.w, self.h])
+        self.imagetop.set_colorkey([0, 0, 0])
         self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
         self.command = None
         self.dir = dir
         self.color = color
 
-    def update(self, screen):
+        self.xdir = round(math.cos(math.radians(dir)))
+        self.ydir = -round(math.sin(math.radians(dir)))
+        self.state = "idle"
+        self.aniframes = 0
+        self.pastaniframes = 0
+
+    def update(self, screen, pushables, robots):
+        self.aniframes += 1
         self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
+        #TEMPORARY
+        if self.state == "idle" and pygame.key.get_pressed()[pygame.K_d]:
+            self.state = "activated"
+            self.totaltimes = 1
+
+        for pushable in pushables:
+            if pushable.frame ==
+
+        if self.state == "activated":
+            if self.aniframes - self.pastaniframes > 15:
+                self.updaterobots(pushables, robots)
+                self.totaltimes += 1
+                self.pastaniframes = self.aniframes
+
+
         self.render(screen)
     def move(self, xvel, yvel):
         self.coordsx += xvel
@@ -397,4 +410,51 @@ class ProgramHeader:
 
     def render(self, screen):
         screen.blit(self.imagebase, self.rect)
-        screen.blit(self.imagearrow, self.rect)
+        screen.blit(self.imagetop, self.rect)
+
+    def findblock(self, x, y, xdir, ydir, pushables, isfirstdepth):
+        startval = 1
+        while self.currenttimes <= self.totaltimes:
+            self.currenttimes <= self.totaltimes
+            self.robotcommand = None
+            for pushable in pushables:
+                #print(pushable.coordsy == y + xdir * startval)
+                #print(self.ydir)
+                if pushable.coordsx == x + xdir * startval and pushable.coordsy == y + ydir * startval and pushable.command != None:
+                    self.robotcommand = pushable.command
+            if self.robotcommand == None:
+                if isfirstdepth:
+                    self.state = "idle"
+                break
+            else:
+                self.currenttimes += 1
+                startval += 1
+    def updaterobots(self, pushables, robots):
+        self.currenttimes = 1
+        self.findblock(self.coordsx, self.coordsy, self.xdir, self.ydir, pushables, True)
+        for robot in robots:
+            if robot.color == self.color and self.robotcommand != "wait":
+                robot.move = self.robotcommand
+
+'''
+    def updaterobots(self, pushables, robots):
+        self.robotcommand = None
+        self.i = 1
+        for d in range(self.totalchecknums):
+            self.findblock(self.coordsx, self.coordsy, self.xdir, self.ydir, pushables, 0)
+            self.i += 1
+            if self.robotcommand == None:
+                break
+        if self.robotcommand != None:
+            print(self.robotcommand)
+        else:
+            self.totalchecknums = 1
+            self.state = "idle"
+
+
+
+    def findblock(self, x, y, xdir, ydir, pushables, negastep):
+        for pushable in pushables:
+            if pushable.coordsx == x + xdir * (self.i - negastep) and pushable.coordsyy == y + ydir * (self.i - negastep) and pushable.command != None:
+                self.robotcommand = pushable.command
+'''
