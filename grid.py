@@ -1,8 +1,8 @@
 import pygame
 import random
 
-WIDTH = 800
-HEIGTH = 640
+WIDTH = 750
+HEIGTH = 750
 
 class Grid:
     def __init__(self, tilesx, tilesy, borderwidth):

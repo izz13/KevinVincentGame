@@ -12,9 +12,9 @@ dt = 0
 
 g = Grid([WIDTH,HEIGHT])
 
-kevinSound = pygame.mixer.Sound("kevinSound.wav")
+#kevinSound = pygame.mixer.Sound("kevinSound.wav")
 
-manAnimation = pygame.image.load_animation("coachStuff/05 zx .gif")
+manAnimation = pygame.image.load_animation("little-man-1.gif")
 print(manAnimation)
 aniTimer = 0
 aniCooldown = 1/15
@@ -42,7 +42,7 @@ def update():
     global soundPlay
     g.update()
     if not soundPlay:
-        kevinSound.play()
+        #kevinSound.play()
         soundPlay = True
 
 isRunning = True
