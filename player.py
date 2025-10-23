@@ -25,11 +25,12 @@ class Player:
         self.pastaniframes = 0
         self.facing = "Front"
         self.reverseSideImage = pygame.transform.flip(self.sideImage, True, False)
+        self.gridx = coordsx
+        self.gridy = coordsy
 
 
 
     def render(self, screen):
-        #pygame.draw.rect(screen, "red", self.rect)
         if self.state == "movingdown":
             screen.blit(self.frontImage, self.rect)
         if self.state == "movingleft":
@@ -155,7 +156,8 @@ class Player:
         if self.state == "movecooldown":
             self.coordsx = round(self.coordsx)
             self.coordsy = round(self.coordsy)
-            #print(self.coordsx, self.coordsy)
+            self.gridx = self.coordsx
+            self.gridy = self.coordsy
             if self.aniframes - self.pastaniframes >= 2:
                 self.state = "idle"
         self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
@@ -257,9 +259,10 @@ class Door:
     def updatestate(self, pushables, players, doors, robots):
         if self.frame == 0:
             self.activate = False
-            for interactable in pushables + [players] + robots:
-                if interactable.coordsx == self.coordsx and interactable.coordsy == self.coordsy:
-                    self.activate = True
+            if players != None:
+                for interactable in pushables + [players] + robots:
+                    if interactable.coordsx == self.coordsx and interactable.coordsy == self.coordsy:
+                        self.activate = True
             for door in doors:
                 if door.frame != 0 and door.color == self.color:
                     if self.activate:
@@ -274,22 +277,23 @@ class Robot:
             self.h = h
             self.tilesx = tilesx
             self.tilesy = tilesy
-            self.image = pygame.image.load(image)
-            self.image = pygame.transform.scale(self.image, [w, h])
-            self.image.set_colorkey([0, 0, 0])
+            self.ogimage = pygame.image.load(image)
+            self.ogimage = pygame.transform.scale(self.ogimage, [w, h])
+            self.ogimage.set_colorkey([0, 0, 0])
             self.state = "idle"
             self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
             self.aniframes = 0
             self.pastaniframes = 0
             self.move = None
             self.color = color
-            self.pixelarray = PixelArray(self.image)
+            self.gridx = self.coordsx
+            self.gridy = self.coordsy
+
+        def render(self, screen):
+            self.pixelarray = PixelArray(self.ogimage.copy())
             self.pixelarray.replace((255, 255, 255), tuple(self.color))
             self.image = self.pixelarray.make_surface()
             self.pixelarray = None
-
-        def render(self, screen):
-            # pygame.draw.rect(screen, "red", self.rect)
             screen.blit(self.image, self.rect)
 
         def checkcollisions(self, walls, xvel, yvel, pushables, tilesx, tilesy, doors, player, robots, gates):
@@ -406,7 +410,8 @@ class Robot:
             if self.state == "movecooldown":
                 self.coordsx = round(self.coordsx)
                 self.coordsy = round(self.coordsy)
-                # print(self.coordsx, self.coordsy)
+                self.gridx = self.coordsx
+                self.gridy = self.gridy
                 if self.aniframes - self.pastaniframes >= 2:
                     self.state = "idle"
             self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
@@ -449,10 +454,12 @@ class ProgramHeader:
         self.aniframes = 0
         self.pastaniframes = 0
         self.flashlist = []
+        self.swapflashlist = []
 
     def update(self, screen, pushables, robots):
         self.aniframes += 1
         self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
+
         # TEMPORARY
         if self.state == "idle" and pygame.key.get_pressed()[pygame.K_d]:
             self.state = "activated"
@@ -482,7 +489,7 @@ class ProgramHeader:
         screen.blit(self.imagebase, self.rect)
         screen.blit(self.imagetop, self.rect)
 
-    def findblock(self, x, y, xdir, ydir, pushables, depth): #took me way too long to get the recursion right :(
+    def findblock(self, x, y, xdir, ydir, pushables, depth):
         startval = 1
         while self.currenttimes <= self.totaltimes:
             self.robotcommand = None
@@ -492,7 +499,7 @@ class ProgramHeader:
                     self.pushablecoordsx = pushable.coordsx
                     self.pushablecoordsy = pushable.coordsy
                     if self.robotcommand == "function":
-                        self.frame3 = pushable.frame3
+                        frame3 = pushable.frame3
             if self.robotcommand == None:
                 if depth == 1:
                     self.state = "idle"
@@ -504,7 +511,7 @@ class ProgramHeader:
             if self.robotcommand == "function":
                 for pushable2 in pushables:
                     if pushable2.frame == 11:
-                        if pushable2.frame3 == self.frame3:
+                        if pushable2.frame3 == frame3:
                             if pushable2.dir == 0:
                                 pushablexdir = 1
                                 pushableydir = 0
@@ -519,16 +526,27 @@ class ProgramHeader:
                                 pushableydir = 0
                             self.findblock(pushable2.coordsx, pushable2.coordsy, pushablexdir, pushableydir, pushables, depth + 1)
             #Failsafe
-            if self.totaltimes >= 30:
+            if self.totaltimes >= 300:
                 self.state = "idle"
     def updaterobots(self, pushables, robots):
         self.currenttimes = 1
         self.findblock(self.coordsx, self.coordsy, self.xdir, self.ydir, pushables, 1)
         if self.robotcommand != None:
             for robot in robots:
-                if robot.color == self.color and self.robotcommand != "wait":
-                    robot.move = self.robotcommand
+                if robot.color == self.color:
+                    if self.robotcommand != "wait" and str(type(self.robotcommand)) != "<class 'list'>":
+                        robot.move = self.robotcommand
                     self.flashlist.append(Flash(self.pushablecoordsx, self.pushablecoordsy, WIDTH / self.tilesx, HEIGTH / self.tilesy, self.tilesx, self.tilesy, [0, 255, 255]))
+            if str(type(self.robotcommand)) == "<class 'list'>":
+                for robot in robots:
+                    if robot.color == self.color:
+                        robot.color = [0, 0, 0]
+                    elif robot.color == self.robotcommand:
+                        self.swapflashlist.append(SwapFlash(robot.coordsx, robot.coordsy, robot.w, robot.h, self.tilesx, self.tilesy, self.robotcommand, "swapflare.png"))
+                        robot.color = self.color
+                    if robot.color == [0, 0, 0]:
+                        self.swapflashlist.append(SwapFlash(robot.coordsx, robot.coordsy, robot.w, robot.h, self.tilesx, self.tilesy, self.color, "swapflare.png"))
+                        robot.color = self.robotcommand
 
 
 class Gate:
@@ -552,10 +570,10 @@ class Gate:
             self.pixelarray.replace((255, 255, 255), tuple(self.passablecolor))
             self.passablesimage = self.pixelarray.make_surface()
             self.pixelarray = None
-        self.passablesimage = pygame.transform.scale(self.passablesimage, (self.w * 0.8, self.h * 0.8))
-        self.imagerect = pygame.rect.Rect(self.w * 0.1, self.h * 0.1, self.w * 0.8, self.h * 0.8)
+        self.passablesimage = pygame.transform.scale(self.passablesimage, (self.w * 0.6, self.h * 0.6))
+        self.imagerect = pygame.rect.Rect(self.w * 0.2, self.h * 0.2, self.w * 0.6, self.h * 0.6)
         self.surface = pygame.surface.Surface((self.w, self.h), pygame.SRCALPHA)
-        pygame.draw.rect(self.surface, tuple(self.color + [127]), pygame.rect.Rect(0, 0, self.w, self.h))
+        pygame.draw.rect(self.surface, tuple(self.color + [50]), pygame.rect.Rect(0, 0, self.w, self.h))
         self.surface.blit(self.passablesimage, self.imagerect)
 
 
@@ -636,3 +654,36 @@ class Function:
         if self.frame2 != None:
             screen.blit(self.midimage, self.rect)
         screen.blit(self.topimage, self.rect)
+
+class SwapFlash:
+    def __init__(self, coordsx, coordsy, w, h, tilesx, tilesy, color, image):
+        self.coordsx = coordsx
+        self.coordsy = coordsy
+        self.w = w
+        self.h = h
+        self.tilesx = tilesx
+        self.tilesy = tilesy
+        self.color = color
+        self.image = pygame.image.load(image)
+        self.image = pygame.transform.scale(self.image, (self.w, self.h))
+        pixelarray = PixelArray(self.image)
+        pixelarray.replace((255, 255, 255), tuple(self.color))
+        self.image = pixelarray.make_surface()
+        pixelarray = None
+        self.aniframes = 0
+        self.rect = pygame.rect.Rect(coordsx * WIDTH / self.tilesx, coordsy * HEIGTH / self.tilesy, self.w, self.h)
+
+    def render(self, screen):
+        screen.blit(self.image, self.newrect)
+
+    def update(self, screen):
+        if self.aniframes <= 30:
+            self.weight = math.sin(self.aniframes / 30 * math.pi)
+            self.scaleby = pygame.math.lerp(self.w, 2 * self.w, self.weight)
+            self.aniframes += 1
+        self.image = pygame.transform.scale(self.image, (self.scaleby, self.scaleby))
+        self.image.set_colorkey([0, 0, 0])
+        self.newrect = self.image.get_rect(center=(self.rect.centerx, self.rect.centery))
+        self.render(screen)
+
+
