@@ -106,16 +106,18 @@ def generatelevel(index):
 
 levelnumber = 0
 
-tilesx = generatelevel(levelnumber)[0]
-tilesy = generatelevel(levelnumber)[1]
-grid = generatelevel(levelnumber)[2]
-player = generatelevel(levelnumber)[3]
-flag = generatelevel(levelnumber)[4]
-walls = generatelevel(levelnumber)[5]
-pushables = generatelevel(levelnumber)[6]
-doors = generatelevel(levelnumber)[7]
-robots = generatelevel(levelnumber)[8]
-gates = generatelevel(levelnumber)[9]
+levelList = generatelevel(levelnumber)
+
+tilesx = levelList[0]
+tilesy = levelList[1]
+grid = levelList[2]
+player = levelList[3]
+flag = levelList[4]
+walls = levelList[5]
+pushables = levelList[6]
+doors = levelList[7]
+robots = levelList[8]
+gates = levelList[9]
 
 
 
@@ -219,13 +221,27 @@ while isrunning:
             }
 
             if newplayerpos != oldplayerpos or newrobotpos != oldrobotpos:
-                undomoves.append(copy.deepcopy(gridstate))
+                gridstatetracker += 1
+                #undomoves.append(copy.deepcopy(gridstate))
+                newGridState = {
+                    "doors":[],
+                    "flag":[],
+                    "walls":[],
+                    "pushables":[],
+                    "robots":[],
+                    "player":[],
+                    "gates":[],
+                    "statenum":gridstatetracker
+                }
+                for key in gridstate:
+                    print(f"{key}, {gridstate[key]}")
+                    newGridState[key] = copy.deepcopy(gridstate[key])
+                for key in newGridState:
+                    print(f"{key}, {newGridState[key]}")
+                undomoves.append(newGridState)
                 oldplayerpos = newplayerpos
                 oldrobotpos = newrobotpos
-                gridstatetracker += 1
-                for i in range(len(undomoves)):
-                    #print(undomoves[i])
-                    pass
+
 
             if pygame.key.get_just_pressed()[pygame.K_u]:
                 if undomoves != []:
@@ -235,10 +251,10 @@ while isrunning:
                     walls = undoframe["walls"]
                     pushables = undoframe["pushables"]
                     robots = undoframe["robots"]
-
                     if player == undoframe["player"]:
                         print("undo player same as current player")
-                    player = undoframe["player"]
+                    else:
+                        player = undoframe["player"]
                     gates = undoframe["gates"]
                     gridstatetracker = undoframe["statenum"]
                     undomoves.remove(undoframe)
