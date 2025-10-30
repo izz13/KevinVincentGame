@@ -13,6 +13,7 @@ class Player:
         self.h = h
         self.tilesx = tilesx
         self.tilesy = tilesy
+        self.imageName = image
         self.frontImage = pygame.image.load("FrontPOV.png")
         self.backImage = pygame.image.load("BackPOV.png")
         self.sideImage = pygame.image.load("SidePOV.png")
@@ -28,7 +29,8 @@ class Player:
         self.gridx = coordsx
         self.gridy = coordsy
 
-
+    def copy(self):
+        return Player(self.coordsx, self.coordsy, self.w, self.h, self.tilesx, self.tilesy, self.image)
 
     def render(self, screen):
         if self.state == "movingdown":
@@ -166,6 +168,8 @@ class Player:
         self.updatepos(walls, pushables, doors, robots, gates)
         self.render(screen)
 
+
+
 class Flag:
     def __init__(self, coordsx, coordsy, w, h, tilesx, tilesy, image):
         self.coordsx = coordsx
@@ -206,7 +210,8 @@ class Pushable:
         self.h = h
         self.tilesx = tilesx
         self.tilesy = tilesy
-        self.spritesheet = SpriteSheet(image)
+        self.imageName = image
+        self.spritesheet = SpriteSheet(self.imageName)
         self.frame = frame
         self.image = self.spritesheet.get_sprite(self.frame, 32, 32, self.w, self.h)
         self.pixelarray = PixelArray(self.image)
@@ -218,6 +223,8 @@ class Pushable:
         self.image.set_colorkey([0, 0, 0])
         self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
         self.command = command
+        self.dir = dir
+        self.color = color
 
     def update(self, screen):
         self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
@@ -228,6 +235,9 @@ class Pushable:
 
     def render(self, screen):
         screen.blit(self.image, self.rect)
+
+    def copy(self):
+        return Pushable(self.coordsx, self.coordsy, self.w, self.h, self.tilesx, self.tilesy, self.imageName, self.frame, self.command, self.dir, self.color)
 
 class Door:
     def __init__(self, coordsx, coordsy, w, h, tilesx, tilesy, image, frame, color):
@@ -261,8 +271,11 @@ class Door:
             self.activate = False
             if players != None:
                 for interactable in pushables + [players] + robots:
-                    if interactable.coordsx == self.coordsx and interactable.coordsy == self.coordsy:
-                        self.activate = True
+                    try:
+                        if interactable.coordsx == self.coordsx and interactable.coordsy == self.coordsy:
+                            self.activate = True
+                    except:
+                        print(type(interactable))
             for door in doors:
                 if door.frame != 0 and door.color == self.color:
                     if self.activate:
@@ -428,7 +441,8 @@ class ProgramHeader:
         self.h = h
         self.tilesx = tilesx
         self.tilesy = tilesy
-        self.spritesheet = SpriteSheet(spritesheet)
+        self.imageName = spritesheet
+        self.spritesheet = SpriteSheet(self.imageName)
         self.frame = frame
         self.frame2 = frame2
         # IMAGEBASE
@@ -455,6 +469,9 @@ class ProgramHeader:
         self.pastaniframes = 0
         self.flashlist = []
         self.swapflashlist = []
+
+    def copy(self):
+        return ProgramHeader(self.coordsx, self.coordsy, self.w, self.h, self.tilesx, self.tilesy, self.imageName, self.frame, self.frame2, self.dir, self.color)
 
     def update(self, screen, pushables, robots):
         self.aniframes += 1
@@ -619,7 +636,8 @@ class Function:
         self.h = h
         self.tilesx = tilesx
         self.tilesy = tilesy
-        self.spritesheet = SpriteSheet(image)
+        self.imageName = image
+        self.spritesheet = SpriteSheet(self.imageName)
         self.frame = frame
         self.frame2 = frame2
         self.frame3 = frame3
@@ -641,6 +659,10 @@ class Function:
 
         self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
         self.command = command
+        self.image = image
+
+    def copy(self):
+        return Function(self.coordsx, self.coordsy, self.w, self.h, self.tilesx, self.tilesy, self.imageName, self.frame, self.frame2, self.frame3, self.command, self.dir)
 
     def update(self, screen):
         self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)

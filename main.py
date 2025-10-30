@@ -157,6 +157,51 @@ while isrunning:
             gamestate = "game"
 
     elif gamestate == "game":
+            gridstate = {
+                "doors":doors,
+                "flag":flag,
+                "walls":walls,
+                "pushables":pushables,
+                "robots":robots,
+                "player":player,
+                "gates":gates,
+                "statenum":gridstatetracker
+            }
+
+            if newplayerpos != oldplayerpos or newrobotpos != oldrobotpos:
+                gridstatetracker += 1
+                #undomoves.append(copy.deepcopy(gridstate))
+                newGridState = {
+                    "doors":[],
+                    "flag":[],
+                    "walls":[],
+                    "pushables":[],
+                    "robots":[],
+                    "player":[],
+                    "gates":[],
+                    "statenum":gridstatetracker
+                }
+                for key in gridstate:
+                    # print(f"{key}, {gridstate[key]}")
+                    try:
+                        newGridState[key] = copy.deepcopy(gridstate[key])
+                    except:
+                        print(f"{key} could not be deep copied")
+                        if key == "doors":
+                            for door in gridstate["doors"]:
+                                newGridState["doors"].append(Door(door.coordsx,door.coordsy,door.w,door.h,door.tilesx,door.tilesy,door.image,door.frame,door.color))
+                        if key == "pushables":
+                            for pu in gridstate["pushables"]:
+                                newGridState["pushables"].append(pu.copy())
+                        if key == "player":
+                            newGridState["player"] = player.copy()
+                # for key in newGridState:
+                    # print(f"{key}, {newGridState[key]}")
+                undomoves.append(newGridState)
+                oldplayerpos = newplayerpos
+                oldrobotpos = newrobotpos
+
+
             pygame.display.set_caption(f"Level {levelnumber}: {level.levels[levelnumber][1]}")
             screen.fill([100, 100, 100])
             grid.render(screen)
@@ -209,43 +254,14 @@ while isrunning:
                 for gate in gates:
                     gate.update(screen)
 
-            gridstate = {
-                "doors":doors,
-                "flag":flag,
-                "walls":walls,
-                "pushables":pushables,
-                "robots":robots,
-                "player":player,
-                "gates":gates,
-                "statenum":gridstatetracker
-            }
 
-            if newplayerpos != oldplayerpos or newrobotpos != oldrobotpos:
-                gridstatetracker += 1
-                #undomoves.append(copy.deepcopy(gridstate))
-                newGridState = {
-                    "doors":[],
-                    "flag":[],
-                    "walls":[],
-                    "pushables":[],
-                    "robots":[],
-                    "player":[],
-                    "gates":[],
-                    "statenum":gridstatetracker
-                }
-                for key in gridstate:
-                    print(f"{key}, {gridstate[key]}")
-                    newGridState[key] = copy.deepcopy(gridstate[key])
-                for key in newGridState:
-                    print(f"{key}, {newGridState[key]}")
-                undomoves.append(newGridState)
-                oldplayerpos = newplayerpos
-                oldrobotpos = newrobotpos
-
-
+            #print(len(undomoves))
             if pygame.key.get_just_pressed()[pygame.K_u]:
                 if undomoves != []:
-                    undoframe = undomoves[-1]
+                    if len(undomoves) > 1:
+                        undoframe = undomoves[-1]
+                    else:
+                        undoframe = undomoves[0]
                     doors = undoframe["doors"]
                     flag = undoframe["flag"]
                     walls = undoframe["walls"]
@@ -258,8 +274,6 @@ while isrunning:
                     gates = undoframe["gates"]
                     gridstatetracker = undoframe["statenum"]
                     undomoves.remove(undoframe)
-
-            #print(len(undomoves))
 
             if player != None and flag != None:
                 if player.state == "movecooldown" or player.state == "idle":
