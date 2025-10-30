@@ -2,6 +2,7 @@ import pygame
 from spritesheet import SpriteSheet
 import math
 from pygame import PixelArray
+from pygame.math import Vector2
 
 WIDTH = 750
 HEIGTH = 750
@@ -108,22 +109,22 @@ class Player:
                     robot.coordsx = round(robot.coordsx)
                     robot.coordsy = round(robot.coordsy)
 
-    def updatepos(self, walls, pushables, doors, robots, gates):
+    def updatepos(self, walls, pushables, doors, robots, gates,input:Vector2):
         self.aniframes += 1
         if self.state == "idle":
-            if pygame.key.get_pressed()[pygame.K_UP]:
+            if input.y == -1:
                 if self.checkcollisions(walls, 0, -1, pushables, self.tilesx, self.tilesy, doors, robots, gates):
                     self.state = "movingup"
                     self.pastaniframes = self.aniframes
-            if pygame.key.get_pressed()[pygame.K_DOWN]:
+            if input.y == 1:
                 if self.checkcollisions(walls, 0, 1, pushables, self.tilesx, self.tilesy, doors, robots, gates):
                     self.state = "movingdown"
                     self.pastaniframes = self.aniframes
-            if pygame.key.get_pressed()[pygame.K_LEFT]:
+            if input.x == -1:
                 if self.checkcollisions(walls, -1, 0, pushables, self.tilesx, self.tilesy, doors, robots, gates):
                     self.state = "movingleft"
                     self.pastaniframes = self.aniframes
-            if pygame.key.get_pressed()[pygame.K_RIGHT]:
+            if input.x == 1:
                 if self.checkcollisions(walls, 1, 0, pushables, self.tilesx, self.tilesy, doors, robots, gates):
                     self.state = "movingright"
                     self.pastaniframes = self.aniframes
@@ -164,8 +165,8 @@ class Player:
                 self.state = "idle"
         self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
 
-    def update(self, screen, walls, pushables, doors, robots, gates):
-        self.updatepos(walls, pushables, doors, robots, gates)
+    def update(self, screen, walls, pushables, doors, robots, gates,input):
+        self.updatepos(walls, pushables, doors, robots, gates,input)
         self.render(screen)
 
 

@@ -4,6 +4,7 @@ from player import Player, Flag, Wall, Pushable, Door, Robot, ProgramHeader, Gat
 import level
 from ui import Button, text
 import copy
+from pygame.math import Vector2
 
 pygame.init()
 
@@ -168,38 +169,38 @@ while isrunning:
                 "statenum":gridstatetracker
             }
 
-            if newplayerpos != oldplayerpos or newrobotpos != oldrobotpos:
-                gridstatetracker += 1
-                #undomoves.append(copy.deepcopy(gridstate))
-                newGridState = {
-                    "doors":[],
-                    "flag":[],
-                    "walls":[],
-                    "pushables":[],
-                    "robots":[],
-                    "player":[],
-                    "gates":[],
-                    "statenum":gridstatetracker
-                }
-                for key in gridstate:
-                    # print(f"{key}, {gridstate[key]}")
-                    try:
-                        newGridState[key] = copy.deepcopy(gridstate[key])
-                    except:
-                        print(f"{key} could not be deep copied")
-                        if key == "doors":
-                            for door in gridstate["doors"]:
-                                newGridState["doors"].append(Door(door.coordsx,door.coordsy,door.w,door.h,door.tilesx,door.tilesy,door.image,door.frame,door.color))
-                        if key == "pushables":
-                            for pu in gridstate["pushables"]:
-                                newGridState["pushables"].append(pu.copy())
-                        if key == "player":
-                            newGridState["player"] = player.copy()
-                # for key in newGridState:
-                    # print(f"{key}, {newGridState[key]}")
-                undomoves.append(newGridState)
-                oldplayerpos = newplayerpos
-                oldrobotpos = newrobotpos
+            # if newplayerpos != oldplayerpos or newrobotpos != oldrobotpos:
+            #     gridstatetracker += 1
+            #     #undomoves.append(copy.deepcopy(gridstate))
+            #     newGridState = {
+            #         "doors":[],
+            #         "flag":[],
+            #         "walls":[],
+            #         "pushables":[],
+            #         "robots":[],
+            #         "player":[],
+            #         "gates":[],
+            #         "statenum":gridstatetracker
+            #     }
+            #     for key in gridstate:
+            #         # print(f"{key}, {gridstate[key]}")
+            #         try:
+            #             newGridState[key] = copy.deepcopy(gridstate[key])
+            #         except:
+            #             print(f"{key} could not be deep copied")
+            #             if key == "doors":
+            #                 for door in gridstate["doors"]:
+            #                     newGridState["doors"].append(Door(door.coordsx,door.coordsy,door.w,door.h,door.tilesx,door.tilesy,door.image,door.frame,door.color))
+            #             if key == "pushables":
+            #                 for pu in gridstate["pushables"]:
+            #                     newGridState["pushables"].append(pu.copy())
+            #             if key == "player":
+            #                 newGridState["player"] = player.copy()
+            #     # for key in newGridState:
+            #         # print(f"{key}, {newGridState[key]}")
+            #     undomoves.append(newGridState)
+            #     oldplayerpos = newplayerpos
+            #     oldrobotpos = newrobotpos
 
 
             pygame.display.set_caption(f"Level {levelnumber}: {level.levels[levelnumber][1]}")
@@ -243,7 +244,49 @@ while isrunning:
                             pushable.swapflashlist.remove(swapflash)
 
             if player != None:
-                player.update(screen, walls, pushables, doors, robots, gates)
+                input = Vector2(0)
+                keys_clicked = pygame.key.get_just_pressed()
+                if keys_clicked[pygame.K_UP]:
+                    input.y = -1
+                if keys_clicked[pygame.K_DOWN]:
+                    input.y = 1
+                if keys_clicked[pygame.K_RIGHT]:
+                    input.x = 1
+                if keys_clicked[pygame.K_LEFT]:
+                    input.x = -1
+                if input != Vector2(0):
+                    gridstatetracker += 1
+                    #undomoves.append(copy.deepcopy(gridstate))
+                    newGridState = {
+                        "doors":[],
+                        "flag":[],
+                        "walls":[],
+                        "pushables":[],
+                        "robots":[],
+                        "player":[],
+                        "gates":[],
+                        "statenum":gridstatetracker
+                    }
+                    for key in gridstate:
+                        # print(f"{key}, {gridstate[key]}")
+                        try:
+                            newGridState[key] = copy.deepcopy(gridstate[key])
+                        except:
+                            print(f"{key} could not be deep copied")
+                            if key == "doors":
+                                for door in gridstate["doors"]:
+                                    newGridState["doors"].append(Door(door.coordsx,door.coordsy,door.w,door.h,door.tilesx,door.tilesy,door.image,door.frame,door.color))
+                            if key == "pushables":
+                                for pu in gridstate["pushables"]:
+                                    newGridState["pushables"].append(pu.copy())
+                            if key == "player":
+                                newGridState["player"] = player.copy()
+                    # for key in newGridState:
+                        # print(f"{key}, {newGridState[key]}")
+                    undomoves.append(newGridState)
+                    oldplayerpos = newplayerpos
+                    oldrobotpos = newrobotpos
+                player.update(screen, walls, pushables, doors, robots, gates,input)
                 if checkcrush(player, doors):
                     player = None
                 newplayerpos = [player.gridx, player.gridy]
