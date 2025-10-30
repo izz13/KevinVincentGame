@@ -1,6 +1,5 @@
 import pygame
 from pygame import mixer
-import time
 
 class Button:
     def __init__(self, centerx, centery, w, h, txtwratio, txthratio, image, sound, text):
@@ -71,39 +70,36 @@ class TypeField:
         if pygame.mouse.get_pressed()[0] and not self.rect.collidepoint(pygame.mouse.get_pos()):
             self.state = "inactive"
         if self.state == "active":
-            if pygame.key.get_pressed()[pygame.K_0] and len(self.text) != self.maxchrs:
+            if pygame.key.get_just_pressed()[pygame.K_0] and len(self.text) != self.maxchrs:
                 self.text.append(0)
-                time.sleep(0.1)
-            if pygame.key.get_pressed()[pygame.K_1] and len(self.text) != self.maxchrs:
+            if pygame.key.get_just_pressed()[pygame.K_1] and len(self.text) != self.maxchrs:
                 self.text.append(1)
-                time.sleep(0.1)
-            if pygame.key.get_pressed()[pygame.K_2] and len(self.text) != self.maxchrs:
+            if pygame.key.get_just_pressed()[pygame.K_2] and len(self.text) != self.maxchrs:
                 self.text.append(2)
-                time.sleep(0.1)
-            if pygame.key.get_pressed()[pygame.K_3] and len(self.text) != self.maxchrs:
+            if pygame.key.get_just_pressed()[pygame.K_3] and len(self.text) != self.maxchrs:
                 self.text.append(3)
-                time.sleep(0.1)
-            if pygame.key.get_pressed()[pygame.K_4] and len(self.text) != self.maxchrs:
+            if pygame.key.get_just_pressed()[pygame.K_4] and len(self.text) != self.maxchrs:
                 self.text.append(4)
-                time.sleep(0.1)
-            if pygame.key.get_pressed()[pygame.K_5] and len(self.text) != self.maxchrs:
+            if pygame.key.get_just_pressed()[pygame.K_5] and len(self.text) != self.maxchrs:
                 self.text.append(5)
-                time.sleep(0.1)
-            if pygame.key.get_pressed()[pygame.K_6] and len(self.text) != self.maxchrs:
+            if pygame.key.get_just_pressed()[pygame.K_6] and len(self.text) != self.maxchrs:
                 self.text.append(6)
-                time.sleep(0.1)
-            if pygame.key.get_pressed()[pygame.K_7] and len(self.text) != self.maxchrs:
+            if pygame.key.get_just_pressed()[pygame.K_7] and len(self.text) != self.maxchrs:
                 self.text.append(7)
-                time.sleep(0.1)
-            if pygame.key.get_pressed()[pygame.K_8] and len(self.text) != self.maxchrs:
+            if pygame.key.get_just_pressed()[pygame.K_8] and len(self.text) != self.maxchrs:
                 self.text.append(8)
-                time.sleep(0.1)
-            if pygame.key.get_pressed()[pygame.K_9] and len(self.text) != self.maxchrs:
+            if pygame.key.get_just_pressed()[pygame.K_9] and len(self.text) != self.maxchrs:
                 self.text.append(9)
-                time.sleep(0.1)
-            if pygame.key.get_pressed()[pygame.K_BACKSPACE] and len(self.text) != 0:
+            if pygame.key.get_just_pressed()[pygame.K_BACKSPACE] and len(self.text) != 0:
                 self.text.remove(self.text[-1])
-                time.sleep(0.1)
         self.render(screen)
     def checkcollisions(self):
         return self.rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]
+
+def text(centerx, centery, w, h, txt, color, screen):
+    font = pygame.font.Font("pixelfont.ttf")
+    fontrect = pygame.rect.Rect(6, 7, w, h)
+    fontrect.center = [centerx, centery]
+    fontsurface = font.render(txt, False, color)
+    fontsurface = pygame.transform.scale(fontsurface, (w, h))
+    screen.blit(fontsurface, fontrect)

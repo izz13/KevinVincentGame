@@ -2,8 +2,8 @@ import pygame
 from grid import Grid
 from player import Player, Flag, Wall, Pushable, Door, Robot, ProgramHeader, Gate, Function
 import level
-from ui import Button
-import time
+from ui import Button, text
+import copy
 
 pygame.init()
 
@@ -20,6 +20,7 @@ def checkcrush(object, doors):
         if object.coordsx == door.coordsx and object.coordsy == door.coordsy and door.frame == 1:
             return True
     return False
+
 
 def generatelevel(index):
     currentlevel = level.levels[index][0]
@@ -103,14 +104,6 @@ def generatelevel(index):
 
     return [tilesx, tilesy, grid, player, flag, walls, pushables, doors, robots, gates]
 
-def text(centerx, centery, w, h, txt, color):
-    font = pygame.font.Font("pixelfont.ttf")
-    fontrect = pygame.rect.Rect(6, 7, w, h)
-    fontrect.center = [centerx, centery]
-    fontsurface = font.render(txt, False, color)
-    fontsurface = pygame.transform.scale(fontsurface, (w, h))
-    screen.blit(fontsurface, fontrect)
-
 levelnumber = 0
 
 tilesx = generatelevel(levelnumber)[0]
@@ -129,6 +122,13 @@ gates = generatelevel(levelnumber)[9]
 #GAMELOOP
 isrunning = True
 gamestate = "startmenu"
+aniframes = 0
+isanim = False
+
+soundplay = {"winsound":False,
+             "crushsound":False,
+             }
+winsound = pygame.mixer.Sound("Win.wav")
 
 undomoves = []
 gridstatetracker = 0
@@ -148,7 +148,7 @@ while isrunning:
     screen.fill([150, 150, 150])
     if gamestate == "startmenu":
         pygame.display.set_caption("")
-        text(375, 50, 500, 50, "Game Title", [100, 100, 100])
+        text(375, 50, 500, 50, "Game Title", [100, 100, 100], screen)
         startbutton = Button(375, 375, 567, 67, 0.5, 0.95, "Button.png", "placeholder", "Start Game")
         startbutton.update(screen)
         if startbutton.checkcollisions():
@@ -157,7 +157,6 @@ while isrunning:
     elif gamestate == "game":
             pygame.display.set_caption(f"Level {levelnumber}: {level.levels[levelnumber][1]}")
             screen.fill([100, 100, 100])
-
             grid.render(screen)
 
             if doors != []:
@@ -201,6 +200,8 @@ while isrunning:
                 if checkcrush(player, doors):
                     player = None
                 newplayerpos = [player.gridx, player.gridy]
+            else:
+                newplayerpos = None
 
             if gates != []:
                 for gate in gates:
@@ -218,16 +219,13 @@ while isrunning:
             }
 
             if newplayerpos != oldplayerpos or newrobotpos != oldrobotpos:
-                laststate = []
-                for item in gridstate.values():
-                    if item != None:
-                        laststate.append(item.copy())
-                undomoves.append(laststate)
+                undomoves.append(copy.deepcopy(gridstate))
                 oldplayerpos = newplayerpos
                 oldrobotpos = newrobotpos
                 gridstatetracker += 1
                 for i in range(len(undomoves)):
-                    print(undomoves[i])
+                    #print(undomoves[i])
+                    pass
 
             if pygame.key.get_just_pressed()[pygame.K_u]:
                 if undomoves != []:
@@ -249,32 +247,11 @@ while isrunning:
 
             if player != None and flag != None:
                 if player.state == "movecooldown" or player.state == "idle":
-                    if [player.coordsx, player.coordsy] == [flag.coordsx, flag.coordsy]:
-                        levelnumber += 1
-                        tilesx = generatelevel(levelnumber)[0]
-                        tilesy = generatelevel(levelnumber)[1]
-                        grid = generatelevel(levelnumber)[2]
-                        player = generatelevel(levelnumber)[3]
-                        flag = generatelevel(levelnumber)[4]
-                        walls = generatelevel(levelnumber)[5]
-                        pushables = generatelevel(levelnumber)[6]
-                        doors = generatelevel(levelnumber)[7]
-                        robots = generatelevel(levelnumber)[8]
-                        gates = generatelevel(levelnumber)[9]
-                        undomoves = []
-            if pygame.key.get_just_pressed()[pygame.K_s]:
-                levelnumber += 1
-                tilesx = generatelevel(levelnumber)[0]
-                tilesy = generatelevel(levelnumber)[1]
-                grid = generatelevel(levelnumber)[2]
-                player = generatelevel(levelnumber)[3]
-                flag = generatelevel(levelnumber)[4]
-                walls = generatelevel(levelnumber)[5]
-                pushables = generatelevel(levelnumber)[6]
-                doors = generatelevel(levelnumber)[7]
-                robots = generatelevel(levelnumber)[8]
-                gates = generatelevel(levelnumber)[9]
-                undomoves = []
+                    if [player.coordsx, player.coordsy] == [flag.coordsx, flag.coordsy] and not isanim:
+                        isanim = True
+
+            if pygame.key.get_just_pressed()[pygame.K_s] and not isanim:
+                isanim = True
 
             if pygame.key.get_just_pressed()[pygame.K_r]:
                 tilesx = generatelevel(levelnumber)[0]
@@ -288,6 +265,44 @@ while isrunning:
                 robots = generatelevel(levelnumber)[8]
                 gates = generatelevel(levelnumber)[9]
                 undomoves = []
+            #HANDLE ANIMATION BETWEEN LEVELS
+
+            if isanim:
+                if aniframes <= 45:
+                    surface = pygame.surface.Surface((WIDTH, HEIGTH), pygame.SRCALPHA)
+                    pygame.draw.rect(surface, [0, 0, 0, (aniframes / 45) * 255], pygame.rect.Rect(0, 0, WIDTH, HEIGTH))
+                if aniframes == 46:
+                    levelnumber += 1
+                    tilesx = generatelevel(levelnumber)[0]
+                    tilesy = generatelevel(levelnumber)[1]
+                    grid = generatelevel(levelnumber)[2]
+                    player = generatelevel(levelnumber)[3]
+                    flag = generatelevel(levelnumber)[4]
+                    walls = generatelevel(levelnumber)[5]
+                    pushables = generatelevel(levelnumber)[6]
+                    doors = generatelevel(levelnumber)[7]
+                    robots = generatelevel(levelnumber)[8]
+                    gates = generatelevel(levelnumber)[9]
+                    undomoves = []
+                if aniframes > 46 and aniframes <= 91:
+                    surface = pygame.surface.Surface((WIDTH, HEIGTH), pygame.SRCALPHA)
+                    pygame.draw.rect(surface, [0, 0, 0, 255 - (((aniframes - 46) / 45) * 255)], pygame.rect.Rect(0, 0, WIDTH, HEIGTH))
+                if aniframes > 91:
+                    isanim = False
+                else:
+                    screen.blit(surface, (0,0))
+
+            if not isanim:
+                aniframes = 0
+                soundplay["winsound"] = False
+            else:
+                aniframes += 1
+                soundplay["winsound"] = True
+
+            #HANDLE SOUND
+            if soundplay["winsound"]:
+                winsound.play()
+
 
     dt = clock.tick(fps) / 1000
     events = pygame.event.get()

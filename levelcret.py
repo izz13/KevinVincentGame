@@ -1,7 +1,7 @@
 import pygame
 from grid import Grid
 from player import Player, Flag, Wall, Pushable, Door, Robot, ProgramHeader, Gate, Function
-from ui import Button, TypeField
+from ui import Button, TypeField, text
 import time
 import pyperclip
 
@@ -111,13 +111,6 @@ def generatelevel():
     return [tilesx, tilesy, grid, player, flag, walls, pushables, doors, robots, gates]
 
 
-def text(centerx, centery, w, h, txt, color):
-    font = pygame.font.Font("pixelfont.ttf")
-    fontrect = pygame.rect.Rect(6, 7, w, h)
-    fontrect.center = [centerx, centery]
-    fontsurface = font.render(txt, False, color)
-    fontsurface = pygame.transform.scale(fontsurface, (w, h))
-    screen.blit(fontsurface, fontrect)
 
 
 tilesx = generatelevel()[0]
@@ -130,6 +123,7 @@ pushables = generatelevel()[6]
 doors = generatelevel()[7]
 robots = generatelevel()[8]
 gates = generatelevel()[9]
+
 
 
 
@@ -225,7 +219,7 @@ while isrunning:
         portbutton.update(screen)
 
 
-        text(1300, 725, 80, 20, str(tilesx) + " by " + str(tilesy), [255, 255, 255])
+        text(1300, 725, 80, 20, str(tilesx) + " by " + str(tilesy), [255, 255, 255], screen)
 
         if widthincreasebutton.checkcollisions():
             newtestlevel = []
@@ -354,7 +348,7 @@ while isrunning:
         for square in grid.squares:
             if square.rect.collidepoint(pygame.mouse.get_pos()) and pygame.key.get_pressed()[pygame.K_SPACE]:
                 squarecoords = square.coords
-                text(1250, 675, 200, 30, str(testlevel[squarecoords[1]][squarecoords[0]]), [255, 255, 255])
+                text(1250, 675, 200, 30, str(testlevel[squarecoords[1]][squarecoords[0]]), [255, 255, 255], screen)
 
             if square.rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
                 squarecoords = square.coords
