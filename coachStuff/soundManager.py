@@ -5,5 +5,8 @@ pygame.mixer.init()
 
 kevinSound = pygame.mixer.Sound("ppm.wav")
 
+kevinSound.play()
+
 while True:
-    kevinSound.play()
+    print(kevinSound.get_length())
+

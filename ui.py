@@ -1,6 +1,14 @@
 import pygame
 from pygame import mixer
 
+
+def text(centerx, centery, w, h, txt, color, screen):
+    font = pygame.font.Font("pixelfont.ttf")
+    fontrect = pygame.rect.Rect(6, 7, w, h)
+    fontrect.center = [centerx, centery]
+    fontsurface = font.render(txt, False, color)
+    fontsurface = pygame.transform.scale(fontsurface, (w, h))
+    screen.blit(fontsurface, fontrect)
 class Button:
     def __init__(self, centerx, centery, w, h, txtwratio, txthratio, image, sound, text):
         self.centerx = centerx
@@ -96,10 +104,42 @@ class TypeField:
     def checkcollisions(self):
         return self.rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]
 
-def text(centerx, centery, w, h, txt, color, screen):
-    font = pygame.font.Font("pixelfont.ttf")
-    fontrect = pygame.rect.Rect(6, 7, w, h)
-    fontrect.center = [centerx, centery]
-    fontsurface = font.render(txt, False, color)
-    fontsurface = pygame.transform.scale(fontsurface, (w, h))
-    screen.blit(fontsurface, fontrect)
+class Slider:
+    def __init__(self, barcenterx, barcentery, barcolor, barlength, barwidth, initialpercentage, sliderimage, sliderimagew, sliderimageh):
+        self.barcenterx = barcenterx
+        self.barcentery = barcentery
+        self.barcolor = barcolor
+        self.barlength = barlength
+        self.barwidth = barwidth
+        self.initalpercentage = initialpercentage
+        self.sliderimage = sliderimage
+        self.sliderimagew = sliderimagew
+        self.sliderimageh = sliderimageh
+        self.image = pygame.image.load(sliderimage)
+        self.image = pygame.transform.scale(self.image, (self.sliderimagew, self.sliderimageh))
+        self.image.set_colorkey([0, 0, 0])
+        self.rect = pygame.rect.Rect(0, 0, self.sliderimagew, self.sliderimageh)
+        self.rect.centerx = pygame.math.lerp(self.barcenterx - self.barlength / 2, self.barcenterx + self.barlength / 2, self.initalpercentage)
+        self.rect.centery = self.barcentery
+        self.hasclicked = True
+
+    def render(self, screen):
+        pygame.draw.line(screen, self.barcolor, (self.barcenterx + self.barlength / 2, self.barcentery), (self.barcenterx - self.barlength / 2, self.barcentery), self.barwidth)
+        screen.blit(self.image, self.rect)
+
+    def updatepos(self):
+        if self.rect.collidepoint(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]) and pygame.mouse.get_pressed()[0]:
+            self.hasclicked = True
+        if not pygame.mouse.get_pressed()[0]:
+            self.hasclicked = False
+        if self.hasclicked:
+            self.rect.centerx = pygame.math.clamp(pygame.mouse.get_pos()[0], self.barcenterx - self.barlength / 2, self.barcenterx + self.barlength / 2)
+            self.rect.centery = self.barcentery
+
+    def update(self, screen):
+        self.updatepos()
+        self.render(screen)
+
+    def findvalue(self, startval, endval):
+        self.weight = (self.rect.centerx - (self.barcenterx - self.barlength / 2)) / self.barlength
+        return pygame.math.lerp(startval, endval, self.weight)

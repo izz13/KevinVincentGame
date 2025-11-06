@@ -2,9 +2,8 @@ import pygame
 from grid import Grid
 from player import Player, Flag, Wall, Pushable, Door, Robot, ProgramHeader, Gate, Function
 import level
-from ui import Button, text
-import copy
-from pygame.math import Vector2
+from ui import Button, text, Slider
+
 
 pygame.init()
 
@@ -104,6 +103,10 @@ def generatelevel(index):
                     pushables.append(Function(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "Pushables.png", 2, None, frame3, "function"))
 
     return [tilesx, tilesy, grid, player, flag, walls, pushables, doors, robots, gates]
+'''
+def startsound(soundfilename, duration):
+    soundplay[soundfilename][0] = duration
+'''
 
 levelnumber = 0
 
@@ -127,82 +130,34 @@ isrunning = True
 gamestate = "startmenu"
 aniframes = 0
 isanim = False
-
-soundplay = {"winsound":False,
-             "crushsound":False,
+'''
+soundplay = {"Winsound.wav":[0,0],
+             "crushsound":[0,0],
              }
-winsound = pygame.mixer.Sound("Win.wav")
+'''
 
 undomoves = []
 gridstatetracker = 0
-if player != None:
-    oldplayerpos = [player.gridx, player.gridy]
-    newplayerpos = oldplayerpos
-else:
-    oldplayerpos = None
-    newplayerpos = oldplayerpos
-oldrobotpos = []
-for robot in robots:
-    oldrobotpos.append([robot.gridx, robot.gridy])
-newrobotpos = oldrobotpos
+
+startbutton = Button(375, 375, 567, 67, 0.5, 0.95, "Button.png", "placeholder", "Start Game")
+brightslider = Slider(382, 290, [100, 100, 100], 167, 5, 1, "Slider.png", 35, 35)
+pastgamestate = "startmenu"
+brightsurface = pygame.surface.Surface([WIDTH, HEIGTH], pygame.SRCALPHA)
+
 
 while isrunning:
     pygame.display.set_icon(pygame.image.load("Player.png"))
-    screen.fill([150, 150, 150])
     if gamestate == "startmenu":
+        screen.fill([150, 150, 150])
         pygame.display.set_caption("")
         text(375, 50, 500, 50, "Game Title", [100, 100, 100], screen)
-        startbutton = Button(375, 375, 567, 67, 0.5, 0.95, "Button.png", "placeholder", "Start Game")
         startbutton.update(screen)
         if startbutton.checkcollisions():
             gamestate = "game"
 
+    #Player(self.coordsx, self.coordsy, self.w, self.h, self.tilesx, self.tilesy, None)
     elif gamestate == "game":
-            gridstate = {
-                "doors":doors,
-                "flag":flag,
-                "walls":walls,
-                "pushables":pushables,
-                "robots":robots,
-                "player":player,
-                "gates":gates,
-                "statenum":gridstatetracker
-            }
-
-            # if newplayerpos != oldplayerpos or newrobotpos != oldrobotpos:
-            #     gridstatetracker += 1
-            #     #undomoves.append(copy.deepcopy(gridstate))
-            #     newGridState = {
-            #         "doors":[],
-            #         "flag":[],
-            #         "walls":[],
-            #         "pushables":[],
-            #         "robots":[],
-            #         "player":[],
-            #         "gates":[],
-            #         "statenum":gridstatetracker
-            #     }
-            #     for key in gridstate:
-            #         # print(f"{key}, {gridstate[key]}")
-            #         try:
-            #             newGridState[key] = copy.deepcopy(gridstate[key])
-            #         except:
-            #             print(f"{key} could not be deep copied")
-            #             if key == "doors":
-            #                 for door in gridstate["doors"]:
-            #                     newGridState["doors"].append(Door(door.coordsx,door.coordsy,door.w,door.h,door.tilesx,door.tilesy,door.image,door.frame,door.color))
-            #             if key == "pushables":
-            #                 for pu in gridstate["pushables"]:
-            #                     newGridState["pushables"].append(pu.copy())
-            #             if key == "player":
-            #                 newGridState["player"] = player.copy()
-            #     # for key in newGridState:
-            #         # print(f"{key}, {newGridState[key]}")
-            #     undomoves.append(newGridState)
-            #     oldplayerpos = newplayerpos
-            #     oldrobotpos = newrobotpos
-
-
+            screen.fill([150, 150, 150])
             pygame.display.set_caption(f"Level {levelnumber}: {level.levels[levelnumber][1]}")
             screen.fill([100, 100, 100])
             grid.render(screen)
@@ -221,7 +176,7 @@ while isrunning:
                     if str(type(pushable)) == "<class 'player.ProgramHeader'>":
                         pushable.update(screen, pushables, robots)
                     else:
-                        pushable.update(screen)
+                         pushable.update(screen)
                     if checkcrush(pushable, doors):
                         pushables.remove(pushable)
                 for pushable in pushables:
@@ -244,49 +199,7 @@ while isrunning:
                             pushable.swapflashlist.remove(swapflash)
 
             if player != None:
-                input = Vector2(0)
-                keys_clicked = pygame.key.get_just_pressed()
-                if keys_clicked[pygame.K_UP]:
-                    input.y = -1
-                if keys_clicked[pygame.K_DOWN]:
-                    input.y = 1
-                if keys_clicked[pygame.K_RIGHT]:
-                    input.x = 1
-                if keys_clicked[pygame.K_LEFT]:
-                    input.x = -1
-                if input != Vector2(0):
-                    gridstatetracker += 1
-                    #undomoves.append(copy.deepcopy(gridstate))
-                    newGridState = {
-                        "doors":[],
-                        "flag":[],
-                        "walls":[],
-                        "pushables":[],
-                        "robots":[],
-                        "player":[],
-                        "gates":[],
-                        "statenum":gridstatetracker
-                    }
-                    for key in gridstate:
-                        # print(f"{key}, {gridstate[key]}")
-                        try:
-                            newGridState[key] = copy.deepcopy(gridstate[key])
-                        except:
-                            print(f"{key} could not be deep copied")
-                            if key == "doors":
-                                for door in gridstate["doors"]:
-                                    newGridState["doors"].append(Door(door.coordsx,door.coordsy,door.w,door.h,door.tilesx,door.tilesy,door.image,door.frame,door.color))
-                            if key == "pushables":
-                                for pu in gridstate["pushables"]:
-                                    newGridState["pushables"].append(pu.copy())
-                            if key == "player":
-                                newGridState["player"] = player.copy()
-                    # for key in newGridState:
-                        # print(f"{key}, {newGridState[key]}")
-                    undomoves.append(newGridState)
-                    oldplayerpos = newplayerpos
-                    oldrobotpos = newrobotpos
-                player.update(screen, walls, pushables, doors, robots, gates,input)
+                player.update(screen, walls, pushables, doors, robots, gates)
                 if checkcrush(player, doors):
                     player = None
                 newplayerpos = [player.gridx, player.gridy]
@@ -297,34 +210,121 @@ while isrunning:
                 for gate in gates:
                     gate.update(screen)
 
-
             #print(len(undomoves))
             if pygame.key.get_just_pressed()[pygame.K_u]:
                 if undomoves != []:
                     if len(undomoves) > 1:
+                        undomoves.remove(undomoves[-1])
                         undoframe = undomoves[-1]
                     else:
                         undoframe = undomoves[0]
-                    doors = undoframe["doors"]
+
+                    undodoorattr = undoframe["doors"]
+                    doors = []
+                    for doorattr in undodoorattr:
+                        doors.append(Door(doorattr[0], doorattr[1], doorattr[2], doorattr[3], doorattr[4], doorattr[5], doorattr[6], doorattr[7], doorattr[8]))
+
                     flag = undoframe["flag"]
+
                     walls = undoframe["walls"]
-                    pushables = undoframe["pushables"]
-                    robots = undoframe["robots"]
-                    if player == undoframe["player"]:
-                        print("undo player same as current player")
-                    else:
-                        player = undoframe["player"]
+
+                    undopushattr = undoframe["pushables"]
+                    pushables = []
+                    for pushattr in undopushattr:
+                        if pushattr[-1] == "pushable":
+                            pushables.append(Pushable(pushattr[0], pushattr[1], pushattr[2], pushattr[3], pushattr[4], pushattr[5], pushattr[6], pushattr[7], pushattr[8], pushattr[9], pushattr[10]))
+                        elif pushattr[-1] == "ProgramHeader":
+                            pushables.append(ProgramHeader(pushattr[0], pushattr[1], pushattr[2], pushattr[3], pushattr[4], pushattr[5], pushattr[6], pushattr[7], pushattr[8], pushattr[9], pushattr[10]))
+                        elif pushattr[-1] == "Function":
+                            pushables.append(Function(pushattr[0], pushattr[1], pushattr[2], pushattr[3], pushattr[4], pushattr[5], pushattr[6], pushattr[7], pushattr[8], pushattr[9], pushattr[10], pushattr[11]))
+
+                    undorobotattr = undoframe["robots"]
+                    robots = []
+                    for robotattr in undorobotattr:
+                        robots.append(Robot(robotattr[0], robotattr[1], robotattr[2], robotattr[3], robotattr[4], robotattr[5], robotattr[6], robotattr[7]))
+
+                    undoplayerattr = undoframe["player"]
+                    player = Player(undoplayerattr[0], undoplayerattr[1], undoplayerattr [2], undoplayerattr[3], undoplayerattr[4], undoplayerattr[5], undoplayerattr[6])
+
                     gates = undoframe["gates"]
+
                     gridstatetracker = undoframe["statenum"]
                     undomoves.remove(undoframe)
+
+            updateframe = False
+            if undomoves == []:
+                updateframe = True
+            elif [player.gridx, player.gridy] != undomoves[-1]["player"][7]:
+                updateframe = True
+            else:
+                for robotnum in range(len(robots)):
+                    if [robots[robotnum].gridx, robots[robotnum].gridy] != undomoves[-1]["robots"][robotnum][8]:
+                        updateframe = True
+                        break
+            for robot in robots:
+                if isinstance(robot.coordsx, float) or isinstance(robot.coordsy, float) or isinstance(player.coordsx, float) or isinstance(player.coordsy, float):
+                    updateframe = False
+
+            if updateframe:
+                gridstatetracker += 1
+                # (self, coordsx, coordsy, w, h, tilesx, tilesy, image, frame, frame2, frame3, command=None, dir = 0)
+
+                pastpushables = []
+                for pushable in pushables:
+                    if isinstance(pushable, Pushable):
+                        pastpushables.append([pushable.coordsx, pushable.coordsy, pushable.w, pushable.h, pushable.tilesx, pushable.tilesy, pushable.ogimage, pushable.frame, pushable.command, pushable.dir, pushable.color, "pushable"])
+                    elif isinstance(pushable, ProgramHeader):
+                        pastpushables.append([pushable.coordsx, pushable.coordsy, pushable.w, pushable.h, pushable.tilesx, pushable.tilesy, pushable.ogspritesheet, pushable.frame, pushable.frame2, pushable.dir, pushable.color, "ProgramHeader"])
+                    elif isinstance(pushable, Function):
+                        pastpushables.append([pushable.coordsx, pushable.coordsy, pushable.w, pushable.h, pushable.tilesx, pushable.tilesy, pushable.ogimage, pushable.frame, pushable.frame2, pushable.frame3, pushable.command, pushable.dir, "Function"])
+
+                pastdoors = []
+                for door in doors:
+                    pastdoors.append([door.coordsx, door.coordsy, door.w, door.h, door.tilesx, door.tilesy, door.image, door.frame, door.color])
+
+                pastrobots = []
+                for robot in robots:
+                    pastrobots.append([robot.coordsx, robot.coordsy, robot.w, robot.h, robot.tilesx, robot.tilesy, robot.ogimage, robot.color, [robot.gridx, robot.gridy]])
+
+                newGridState = {
+                    "doors": pastdoors,
+                    "flag": flag,
+                    "walls": walls,
+                    "pushables": pastpushables,
+                    "robots": pastrobots,
+                    "player": [player.coordsx, player.coordsy, player.w, player.h, player.tilesx, player.tilesy, None, [player.gridx, player.gridy]],
+                    "gates": gates,
+                    "statenum": gridstatetracker
+                }
+                '''
+                    for key in gridstate:
+                            # print(f"{key}, {gridstate[key]}")
+                            try:
+                                newGridState[key] = copy.deepcopy(gridstate[key])
+                            except:
+                                print(f"{key} could not be deep copied")
+                                if key == "doors":
+                                    for door in gridstate["doors"]:
+                                        newGridState["doors"].append(Door(door.coordsx,door.coordsy,door.w,door.h,door.tilesx,door.tilesy,door.image,door.frame,door.color))
+                                if key == "pushables":
+                                    for pu in gridstate["pushables"]:
+                                    newGridState["pushables"].append(pu.copy())
+                            if key == "player":
+                                newGridState["player"] = player.copy()
+                    # for key in newGridState:
+                        # print(f"{key}, {newGridState[key]}")
+                 '''
+                undomoves.append(newGridState)
 
             if player != None and flag != None:
                 if player.state == "movecooldown" or player.state == "idle":
                     if [player.coordsx, player.coordsy] == [flag.coordsx, flag.coordsy] and not isanim:
                         isanim = True
+                        pygame.mixer.Sound("Winsound.wav").play()
 
-            if pygame.key.get_just_pressed()[pygame.K_s] and not isanim:
+            if pygame.key.get_just_pressed()[pygame.K_e] and not isanim:
                 isanim = True
+                pygame.mixer.Sound("Winsound.wav").play()
 
             if pygame.key.get_just_pressed()[pygame.K_r]:
                 tilesx = generatelevel(levelnumber)[0]
@@ -367,15 +367,43 @@ while isrunning:
 
             if not isanim:
                 aniframes = 0
-                soundplay["winsound"] = False
             else:
                 aniframes += 1
-                soundplay["winsound"] = True
 
+            '''
             #HANDLE SOUND
-            if soundplay["winsound"]:
-                winsound.play()
+            for key in soundplay.keys():
+                if soundplay[key][0] > 0:
+                    sound = pygame.mixer.Sound(key)
+                    if soundplay[key][1] <= 0:
+                        soundplay[key][1] = int(sound.get_length())
+                        soundplay[key][1] -= 1
+                        sound.play()
+                    soundplay[key][0] -= 1
+            '''
 
+    if gamestate != "settings" and pygame.key.get_just_pressed()[pygame.K_s]:
+        pastgamestate = gamestate
+        gamestate = "settings"
+
+    elif gamestate == "settings":
+        mouse = pygame.mouse.get_pos()
+        #print(mouse)
+        screen.fill([50, 50, 50])
+        text(WIDTH / 2, 50, 250, 75, "Settings", [255, 255, 255], screen)
+        text(382, 257, 125, 35, "Brightness", [255, 255, 255], screen)
+        brightslider.update(screen)
+        if pygame.key.get_just_pressed()[pygame.K_s]:
+            gamestate = pastgamestate
+
+
+
+
+    #HANDLE AT ALL TIMES
+    opacity = round(brightslider.findvalue(255, 0))
+    print(opacity)
+    pygame.draw.rect(brightsurface, [0, 0, 0, opacity], (0, 0, WIDTH, HEIGTH))
+    screen.blit(brightsurface)
 
     dt = clock.tick(fps) / 1000
     events = pygame.event.get()

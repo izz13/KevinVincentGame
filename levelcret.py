@@ -330,8 +330,8 @@ while isrunning:
             dirbutton.update(screen)
             letterbutton.update(screen)
         if mousemode == "func":
-            letterbutton = Button(850 + 125 * 3 + 40, 75 + 125 * 4, 150, 75, 0.7, 0.7, "Button.png", None, ["a", "b", "c", "d"][index2])
             index2 = index2 % 4
+            letterbutton = Button(850 + 125 * 3 + 40, 75 + 125 * 4, 150, 75, 0.7, 0.7, "Button.png", None, ["a", "b", "c", "d"][index2])
             if letterbutton.checkcollisions():
                 index2 = index2 + 1
                 time.sleep(0.2)
