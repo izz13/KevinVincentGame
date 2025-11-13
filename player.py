@@ -13,34 +13,28 @@ class Player:
         self.h = h
         self.tilesx = tilesx
         self.tilesy = tilesy
-        self.frontImage = pygame.image.load("FrontPOV.png")
-        self.backImage = pygame.image.load("BackPOV.png")
-        self.sideImage = pygame.image.load("SidePOV.png")
-        self.image = self.frontImage
-        self.image = pygame.transform.scale(self.image, [w, h])
-        self.image.set_colorkey([0,0,0])
-        self.state = "idle"
+        self.frontImage = pygame.transform.scale(pygame.image.load("FrontPOV.png"), [w, h])
+        self.backImage = pygame.transform.scale(pygame.image.load("BackPOV.png"), [w, h])
+        self.sideImage = pygame.transform.scale(pygame.image.load("SidePOV.png"), [w, h])
+        self.frontImage.set_colorkey([0, 0, 0])
+        self.backImage.set_colorkey([0, 0, 0])
+        self.sideImage.set_colorkey([0, 0, 0])
+        self.reverseSideImage = pygame.transform.flip(self.sideImage, True, False)
+        self.images = {"movingup" : self.backImage, "movingdown" : self.frontImage, "movingleft" : self.reverseSideImage, "movingright" : self.sideImage}
         self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
         self.aniframes = 0
         self.pastaniframes = 0
-        self.facing = "Front"
-        self.reverseSideImage = pygame.transform.flip(self.sideImage, True, False)
+        self.state = "idle"
         self.gridx = coordsx
         self.gridy = coordsy
+        self.currentimage = self.frontImage
 
 
 
     def render(self, screen):
-        if self.state == "movingdown":
-            screen.blit(self.frontImage, self.rect)
-        if self.state == "movingleft":
-            screen.blit(self.reverseSideImage, self.rect)
-        if self.state == "movingright":
-            screen.blit(self.sideImage, self.rect)
-        if self.state == "movingup":
-            screen.blit(self.backImage, self.rect)
-        if self.state == "idle":
-            screen.blit(self.image, self.rect)
+        if self.state in self.images.keys():
+            self.currentimage = self.images[self.state]
+        screen.blit(self.currentimage, self.rect)
 
 
     def checkcollisions(self, walls, xvel, yvel, pushables, tilesx, tilesy, doors, robots, gates):

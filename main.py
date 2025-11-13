@@ -157,7 +157,6 @@ while isrunning:
 
     #Player(self.coordsx, self.coordsy, self.w, self.h, self.tilesx, self.tilesy, None)
     elif gamestate == "game":
-            screen.fill([150, 150, 150])
             pygame.display.set_caption(f"Level {levelnumber}: {level.levels[levelnumber][1]}")
             screen.fill([100, 100, 100])
             grid.render(screen)
@@ -202,9 +201,6 @@ while isrunning:
                 player.update(screen, walls, pushables, doors, robots, gates)
                 if checkcrush(player, doors):
                     player = None
-                newplayerpos = [player.gridx, player.gridy]
-            else:
-                newplayerpos = None
 
             if gates != []:
                 for gate in gates:
@@ -296,24 +292,6 @@ while isrunning:
                     "gates": gates,
                     "statenum": gridstatetracker
                 }
-                '''
-                    for key in gridstate:
-                            # print(f"{key}, {gridstate[key]}")
-                            try:
-                                newGridState[key] = copy.deepcopy(gridstate[key])
-                            except:
-                                print(f"{key} could not be deep copied")
-                                if key == "doors":
-                                    for door in gridstate["doors"]:
-                                        newGridState["doors"].append(Door(door.coordsx,door.coordsy,door.w,door.h,door.tilesx,door.tilesy,door.image,door.frame,door.color))
-                                if key == "pushables":
-                                    for pu in gridstate["pushables"]:
-                                    newGridState["pushables"].append(pu.copy())
-                            if key == "player":
-                                newGridState["player"] = player.copy()
-                    # for key in newGridState:
-                        # print(f"{key}, {newGridState[key]}")
-                 '''
                 undomoves.append(newGridState)
 
             if player != None and flag != None:
@@ -338,8 +316,8 @@ while isrunning:
                 robots = generatelevel(levelnumber)[8]
                 gates = generatelevel(levelnumber)[9]
                 undomoves = []
-            #HANDLE ANIMATION BETWEEN LEVELS
 
+            #HANDLE ANIMATION BETWEEN LEVELS
             if isanim:
                 if aniframes <= 45:
                     surface = pygame.surface.Surface((WIDTH, HEIGTH), pygame.SRCALPHA)
@@ -370,17 +348,6 @@ while isrunning:
             else:
                 aniframes += 1
 
-            '''
-            #HANDLE SOUND
-            for key in soundplay.keys():
-                if soundplay[key][0] > 0:
-                    sound = pygame.mixer.Sound(key)
-                    if soundplay[key][1] <= 0:
-                        soundplay[key][1] = int(sound.get_length())
-                        soundplay[key][1] -= 1
-                        sound.play()
-                    soundplay[key][0] -= 1
-            '''
 
     if gamestate != "settings" and pygame.key.get_just_pressed()[pygame.K_s]:
         pastgamestate = gamestate
@@ -401,7 +368,6 @@ while isrunning:
 
     #HANDLE AT ALL TIMES
     opacity = round(brightslider.findvalue(255, 0))
-    print(opacity)
     pygame.draw.rect(brightsurface, [0, 0, 0, opacity], (0, 0, WIDTH, HEIGTH))
     screen.blit(brightsurface)
 
