@@ -227,22 +227,17 @@ newstartbutton = Button(375, 300, 567, 67, 0.5, 0.95, "Button.png", "placeholder
 cutscenebutton = Button(WIDTH//2,HEIGTH//2 , WIDTH, HEIGTH, 0.5, 0.95, "Button.png", "placeholder", "Next Cutscene")
 
 brightslider = Slider(382, 290, [100, 100, 100], 167, 5, 1, "Slider.png", 35, 35)
-cutimg = pygame.image.load("Cut1.png")
-cutimg = pygame.transform.scale(cutimg, [WIDTH, HEIGTH])
-cutimg2 = pygame.image.load("Cut2.png")
-cutimg2 = pygame.transform.scale(cutimg2, [WIDTH, HEIGTH])
-cutimg3 = pygame.image.load("Cut3.png")
-cutimg3 = pygame.transform.scale(cutimg3, [WIDTH, HEIGTH])
 completedlevels = set()
 pastgamestate = "startmenu"
 brightsurface = pygame.surface.Surface([WIDTH, HEIGTH], pygame.SRCALPHA)
-cutimg = pygame.image.load("Cut1.png")
-cutimg = pygame.transform.scale(cutimg, [WIDTH, HEIGTH])
-cutimg2 = pygame.image.load("Cut2.png")
-cutimg2 = pygame.transform.scale(cutimg2, [WIDTH, HEIGTH])
-cutimg3 = pygame.image.load("Cut3.png")
-cutimg3 = pygame.transform.scale(cutimg3, [WIDTH, HEIGTH])
-number = 0
+cutsceneimages = []
+for filename in ["Cut1.png", "Cut2.png", "Cut3.png"]:
+    image = pygame.image.load(filename)
+    image = pygame.transform.scale(image, [WIDTH, HEIGTH])
+    cutsceneimages.append(image)
+
+cutsceneframe = 0
+
 while isrunning:
     pygame.display.set_icon(pygame.image.load("Player.png"))
     if gamestate == "startmenu":
@@ -252,22 +247,17 @@ while isrunning:
         startbutton.update(screen)
         newstartbutton.update(screen)
         #ambient.play()
-
-
         if startbutton.checkcollisions():
             gamestate = "game"
         if newstartbutton.checkcollisions():
             gamestate = "cutscene"
     elif gamestate == "cutscene":
         cutscenebutton.update(screen)
-        screen.blit(cutimg, [0,0])
-        if cutscenebutton.checkcollisions():
-            number += 1
-        if number == 1:
-            screen.blit(cutimg2, [0,0])
-        elif number ==2:
-            screen.blit(cutimg3, [0,0])
-        elif number == 3:
+        if cutsceneframe <= 2:
+            screen.blit(cutsceneimages[cutsceneframe], [0, 0])
+            if cutscenebutton.checkcollisions():
+                cutsceneframe += 1
+        else:
             gamestate = "game"
     #Player(self.coordsx, self.coordsy, self.w, self.h, self.tilesx, self.tilesy, None)
     elif gamestate == "game":
