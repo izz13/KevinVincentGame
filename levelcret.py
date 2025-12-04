@@ -434,7 +434,7 @@ while isrunning:
                         if isvalid:
                             testlevel[squarecoords[1]][squarecoords[0]] = ["robot", color]
                 if mousemode == "phead":
-                    if rtypefield.textstr != "" and gtypefield.textstr != "" and btypefield.textstr != "":
+                    if rtypefield.textstr != "" and gtypefield.textstr != " and btypefield.textstr != "":
                         color = [int(rtypefield.textstr), int(gtypefield.textstr), int(btypefield.textstr)]
                         isvalid = True
                         for value in color:

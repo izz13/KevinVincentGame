@@ -34,6 +34,7 @@ class Player:
         self.gridx = coordsx
         self.gridy = coordsy
         self.currentimage = self.frontImage
+        self.keymode = "WASD"
 
 
 
@@ -105,26 +106,48 @@ class Player:
                 if self.aniframes - self.pastaniframes == 15:
                     robot.coordsx = round(robot.coordsx)
                     robot.coordsy = round(robot.coordsy)
-
+    def getInput(self):
+        moveValue = [0,0]
+        keys = pygame.key.get_pressed()
+        if self.keymode == "WASD":
+            if keys[pygame.K_w]:
+                moveValue[1] = -1
+            if keys[pygame.K_s]:
+                moveValue[1] = 1
+            if keys[pygame.K_a]:
+                moveValue[0] = -1
+            if keys[pygame.K_d]:
+                moveValue[0] = 1
+        if self.keymode == "arrow":
+            if keys[pygame.K_UP]:
+                moveValue[1] = -1
+            if keys[pygame.K_DOWN]:
+                moveValue[1] = 1
+            if keys[pygame.K_LEFT]:
+                moveValue[0] = -1
+            if keys[pygame.K_RIGHT]:
+                moveValue[0] = 1
+        return moveValue
     def updatepos(self, walls, pushables, doors, robots, gates, levelunlocks):
         self.aniframes += 1
         if self.state == "idle":
-            if pygame.key.get_pressed()[pygame.K_UP]:
+            moveValue = self.getInput()
+            if moveValue[1] == -1:
                 self.facing = "movingup"
                 if self.checkcollisions(walls + levelunlocks, 0, -1, pushables, self.tilesx, self.tilesy, doors, robots, gates):
                     self.state = "movingup"
                     self.pastaniframes = self.aniframes
-            if pygame.key.get_pressed()[pygame.K_DOWN]:
+            if moveValue[1] == 1:
                 self.facing = "movingdown"
                 if self.checkcollisions(walls + levelunlocks, 0, 1, pushables, self.tilesx, self.tilesy, doors, robots, gates):
                     self.state = "movingdown"
                     self.pastaniframes = self.aniframes
-            if pygame.key.get_pressed()[pygame.K_LEFT]:
+            if moveValue[0] == -1:
                 self.facing = "movingleft"
                 if self.checkcollisions(walls + levelunlocks, -1, 0, pushables, self.tilesx, self.tilesy, doors, robots, gates):
                     self.state = "movingleft"
                     self.pastaniframes = self.aniframes
-            if pygame.key.get_pressed()[pygame.K_RIGHT]:
+            if moveValue[0] == 1:
                 self.facing = "movingright"
                 if self.checkcollisions(walls + levelunlocks, 1, 0, pushables, self.tilesx, self.tilesy, doors, robots, gates):
                     self.state = "movingright"
@@ -552,7 +575,7 @@ class ProgramHeader:
         self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
 
         # TEMPORARY
-        if self.state == "idle" and pygame.key.get_pressed()[pygame.K_d]:
+        if self.state == "idle" and pygame.key.get_pressed()[pygame.K_f]:
             self.state = "activated"
             self.totaltimes = 1
 
