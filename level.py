@@ -103,13 +103,16 @@ levelswaptest = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [['r
 levelundotest = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 4, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, ['door', 0, [255, 0, 0]], 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, ['door', 1, [255, 0, 0]], 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
 levels = [
-            [level9, "title"],
-            [level1, "title"],
-            [level2, "title"],
-            [level3, "title"],
-            [level4, "title"],
-            [level5, "title"],
-            [level6, "title"],
+            [levelselect1, "Level Select"],
+            [levelselect2, "Level Select"],
+            [levelselect3, "Level Select"],
+            [level0, "No Brainer Level"],
+            [level1, "The Maze"],
+            [level2, "Haul 'em Around"],
+            [level3, "Shunters"],
+            [level4, "Meet the Robot"],
+            [level5, "Trio Battery"],
+            [level6, "Your Path"],
             [level7, "title"],
             [level8, "title"],
             [level9, "title"],

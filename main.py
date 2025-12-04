@@ -223,8 +223,17 @@ gridstatetracker = 0
 startbutton = Button(375, 375, 567, 67, 0.5, 0.95, "Button.png", "placeholder", "Start Game")
 newstartbutton = Button(375, 300, 567, 67, 0.5, 0.95, "Button.png", "placeholder", "Start New Game")
 cutscenebutton = Button(WIDTH//2,HEIGTH//2 , WIDTH, HEIGTH, 0.5, 0.95, "Button.png", "placeholder", "Next Cutscene")
+newstartbutton = Button(375, 300, 567, 67, 0.5, 0.95, "Button.png", "placeholder", "Start New Game")
+cutscenebutton = Button(WIDTH//2,HEIGTH//2 , WIDTH, HEIGTH, 0.5, 0.95, "Button.png", "placeholder", "Next Cutscene")
 
 brightslider = Slider(382, 290, [100, 100, 100], 167, 5, 1, "Slider.png", 35, 35)
+cutimg = pygame.image.load("Cut1.png")
+cutimg = pygame.transform.scale(cutimg, [WIDTH, HEIGTH])
+cutimg2 = pygame.image.load("Cut2.png")
+cutimg2 = pygame.transform.scale(cutimg2, [WIDTH, HEIGTH])
+cutimg3 = pygame.image.load("Cut3.png")
+cutimg3 = pygame.transform.scale(cutimg3, [WIDTH, HEIGTH])
+completedlevels = set()
 pastgamestate = "startmenu"
 brightsurface = pygame.surface.Surface([WIDTH, HEIGTH], pygame.SRCALPHA)
 cutimg = pygame.image.load("Cut1.png")
@@ -241,7 +250,7 @@ while isrunning:
         text(375, 50, 500, 50, "Game Title", [100, 100, 100], screen)
         startbutton.update(screen)
         newstartbutton.update(screen)
-        ambient.play()
+        #ambient.play()
 
 
         if startbutton.checkcollisions():
@@ -501,7 +510,7 @@ while isrunning:
             if isanim:
                 anim(newlevel, screen)
 
-    if gamestate != "settings" and pygame.key.get_just_pressed()[pygame.K_s]:
+    if gamestate != "settings" and pygame.key.get_just_pressed()[pygame.K_ESCAPE]:
         pastgamestate = gamestate
         gamestate = "settings"
 
@@ -511,7 +520,7 @@ while isrunning:
         text(WIDTH / 2, 50, 250, 75, "Settings", [255, 255, 255], screen)
         text(382, 257, 125, 35, "Brightness", [255, 255, 255], screen)
         brightslider.update(screen)
-        if pygame.key.get_just_pressed()[pygame.K_s]:
+        if pygame.key.get_just_pressed()[pygame.K_ESCAPE]:
             gamestate = pastgamestate
 
 
