@@ -13,6 +13,8 @@ screen = pygame.display.set_mode([WIDTH, HEIGTH])
 clock = pygame.time.Clock()
 fps = 60
 dt = 0
+controls = "0"
+
 
 def checkcrush(object, doors):
     for door in doors:
@@ -226,6 +228,7 @@ cutscenebutton = Button(WIDTH//2,HEIGTH//2 , WIDTH, HEIGTH, 0.5, 0.95, "Button.p
 newstartbutton = Button(375, 300, 567, 67, 0.5, 0.95, "Button.png", "placeholder", "Start New Game")
 cutscenebutton = Button(WIDTH//2,HEIGTH//2 , WIDTH, HEIGTH, 0.5, 0.95, "Button.png", "placeholder", "Next Cutscene")
 
+
 brightslider = Slider(382, 290, [100, 100, 100], 167, 5, 1, "Slider.png", 35, 35)
 cutimg = pygame.image.load("Cut1.png")
 cutimg = pygame.transform.scale(cutimg, [WIDTH, HEIGTH])
@@ -336,6 +339,8 @@ while isrunning:
             if player != None:
                 if not isanim:
                     player.update(screen, walls, pushables, doors, robots, gates, levelunlocks)
+                    player.controls = controls
+
                 else:
                     player.render(screen)
                 if checkcrush(player, doors):
@@ -515,14 +520,20 @@ while isrunning:
         pastgamestate = gamestate
         gamestate = "settings"
 
+
     elif gamestate == "settings":
         mouse = pygame.mouse.get_pos()
         screen.fill([50, 50, 50])
         text(WIDTH / 2, 50, 250, 75, "Settings", [255, 255, 255], screen)
         text(382, 257, 125, 35, "Brightness", [255, 255, 255], screen)
         brightslider.update(screen)
+        controlButton = Button(WIDTH // 2, HEIGTH // 2, WIDTH, HEIGTH, 0.5, 0.95, "Button.png", "placeholder", ["arrow", "wasd"][controls])
+        if controlButton.checkcollisions():
+            controls += 1
+            controls = controls % 2
         if pygame.key.get_just_pressed()[pygame.K_ESCAPE]:
             gamestate = pastgamestate
+
 
 
 
@@ -531,7 +542,6 @@ while isrunning:
     opacity = round(brightslider.findvalue(255, 0))
     pygame.draw.rect(brightsurface, [0, 0, 0, opacity], (0, 0, WIDTH, HEIGTH))
     screen.blit(brightsurface)
-
     dt = clock.tick(fps) / 1000
     events = pygame.event.get()
     for event in events:

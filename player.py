@@ -34,8 +34,8 @@ class Player:
         self.gridx = coordsx
         self.gridy = coordsy
         self.currentimage = self.frontImage
-        self.keymode = "WASD"
-
+        self.controls = 0
+        self.keys = [[pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT], [pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d]]
 
 
     def render(self, screen):
@@ -129,25 +129,25 @@ class Player:
                 moveValue[0] = 1
         return moveValue
     def updatepos(self, walls, pushables, doors, robots, gates, levelunlocks):
+        self.keys = [[pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT], [pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d]]
         self.aniframes += 1
         if self.state == "idle":
-            moveValue = self.getInput()
-            if moveValue[1] == -1:
+            if self.keys[int(self.controls)][0] == -1:
                 self.facing = "movingup"
                 if self.checkcollisions(walls + levelunlocks, 0, -1, pushables, self.tilesx, self.tilesy, doors, robots, gates):
                     self.state = "movingup"
                     self.pastaniframes = self.aniframes
-            if moveValue[1] == 1:
+            if self.keys[int(self.controls)][1] == 1:
                 self.facing = "movingdown"
                 if self.checkcollisions(walls + levelunlocks, 0, 1, pushables, self.tilesx, self.tilesy, doors, robots, gates):
                     self.state = "movingdown"
                     self.pastaniframes = self.aniframes
-            if moveValue[0] == -1:
+            if self.keys[int(self.controls)][2] == -1:
                 self.facing = "movingleft"
                 if self.checkcollisions(walls + levelunlocks, -1, 0, pushables, self.tilesx, self.tilesy, doors, robots, gates):
                     self.state = "movingleft"
                     self.pastaniframes = self.aniframes
-            if moveValue[0] == 1:
+            if self.keys[int(self.controls)][3] == 1:
                 self.facing = "movingright"
                 if self.checkcollisions(walls + levelunlocks, 1, 0, pushables, self.tilesx, self.tilesy, doors, robots, gates):
                     self.state = "movingright"
