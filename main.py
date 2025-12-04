@@ -242,6 +242,7 @@ cutimg2 = pygame.image.load("Cut2.png")
 cutimg2 = pygame.transform.scale(cutimg2, [WIDTH, HEIGTH])
 cutimg3 = pygame.image.load("Cut3.png")
 cutimg3 = pygame.transform.scale(cutimg3, [WIDTH, HEIGTH])
+number = 0
 while isrunning:
     pygame.display.set_icon(pygame.image.load("Player.png"))
     if gamestate == "startmenu":
