@@ -1,4 +1,5 @@
 import pygame
+pygame.init()
 from pygame import mixer
 
 
@@ -6,9 +7,10 @@ def text(centerx, centery, w, h, txt, color, screen):
     font = pygame.font.Font("pixelfont.ttf")
     fontrect = pygame.rect.Rect(6, 7, w, h)
     fontrect.center = [centerx, centery]
-    fontsurface = font.render(txt, False, color)
+    fontsurface = font.render(str(txt), False, color)
     fontsurface = pygame.transform.scale(fontsurface, (w, h))
     screen.blit(fontsurface, fontrect)
+
 class Button:
     def __init__(self, centerx, centery, w, h, txtwratio, txthratio, image, sound, text):
         self.centerx = centerx
@@ -38,7 +40,7 @@ class Button:
     def update(self, screen):
         self.render(screen)
     def checkcollisions(self):
-        return self.rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]
+        return self.rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_just_pressed()[0]
 
 class TypeField:
     def __init__(self, centerx, centery, w, h, txtwratio, txthratio, image, label, maxchrs, txtcolor):

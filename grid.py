@@ -1,5 +1,5 @@
 import pygame
-import random
+pygame.init()
 
 WIDTH = 750
 HEIGTH = 750
@@ -7,6 +7,8 @@ HEIGTH = 750
 class Grid:
     def __init__(self, tilesx, tilesy, borderwidth):
         self.squares = []
+        self.tilesx = tilesx
+        self.tilesy = tilesy
         for i in range(tilesx):
             x = (WIDTH * i / tilesx) + borderwidth
             w = (WIDTH / tilesx) - (2 * borderwidth)
@@ -35,17 +37,3 @@ class Squares:
 
     def render(self, screen):
         screen.blit(self.image, self.rect)
-        '''
-        if self.coords[0] % 2 == 1 and self.coords[1] % 2 == 1:
-            for i in range(15):
-                x = random.randint(0, self.w)
-                y = random.randint(0, self.h)
-                color = random.choice(["green", "salmon", "red"])
-                size = random.randint(1,3)
-                pygame.draw.circle(self.surface,color,[x,y],size)
-        screen.blit(self.surface, self.rect)
-        '''
-
-
-
-

@@ -9,6 +9,6 @@ class SpriteSheet:
   def get_sprite(self, frame, w, h, sw, sh):
     image = pygame.Surface((w, h)).convert_alpha()
     image.blit(self.sheet, (0, 0), [(frame * w), 0, w, h])
-    image = pygame.transform.smoothscale(image, [sw, sh])
+    image = pygame.transform.scale(image, [sw, sh])
     image.set_colorkey([0, 0, 0])
     return image

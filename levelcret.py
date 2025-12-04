@@ -1,8 +1,7 @@
 import pygame
 from grid import Grid
-from player import Player, Flag, Wall, Pushable, Door, Robot, ProgramHeader, Gate, Function
+from player import Player, Flag, Wall, Pushable, Door, Robot, ProgramHeader, Gate, Function, LevelBlock, LevelChange, LevelUnlock
 from ui import Button, TypeField, text
-import time
 import pyperclip
 
 
@@ -12,13 +11,11 @@ pygame.init()
 WIDTH = 750
 HEIGTH = 750
 pygame.display.init()
-screen = pygame.display.set_mode([WIDTH + 600, HEIGTH])
+screen = pygame.display.set_mode([WIDTH + 675, HEIGTH])
 clock = pygame.time.Clock()
 fps = 60
 dt = 0
 
-#testlevelw = 5
-#testlevelh = 5
 testlevel = [[0] * 5] * 5
 
 
@@ -40,6 +37,9 @@ def generatelevel():
     doors = []
     robots = []
     gates = []
+    levelblocks = []
+    levelchanges = []
+    levelunlocks = []
     for i in range(tilesy):
         for n in range(tilesx):
             currenttile = currentlevel[i][n]
@@ -48,7 +48,7 @@ def generatelevel():
             elif currenttile == 2:
                 flag = Flag(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "Flag.png")
             elif currenttile == 3:
-                walls.append(Wall(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "Walls.png"))
+                walls.append(Wall(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "wall.png"))
             elif currenttile == 4:
                 pushables.append(Pushable(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "Pushables.png", 0, "wait"))
             elif currenttile == 5:
@@ -107,8 +107,15 @@ def generatelevel():
                 if currenttile[0] == "function":
                     frame3 = {"a": 7, "b": 8, "c": 9, "d": 10}[currenttile[1]]
                     pushables.append(Function(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "Pushables.png", 2, None, frame3, "function"))
+                if currenttile[0] == "levelblock":
+                    levelblocks.append(LevelBlock(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "levelblock.png", currenttile[1]))
+                if currenttile[0] == "levelchange":
+                    levelchanges.append(LevelChange(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "levelchange.png", {"up":90, "down":-90, "right":0, "left":180}[currenttile[1]], currenttile[2]))
+                if currenttile[0] == "levelunlock":
+                    levelunlocks.append(LevelUnlock(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "levelunlock.png", currenttile[1], currenttile[2], currenttile[3]))
 
-    return [tilesx, tilesy, grid, player, flag, walls, pushables, doors, robots, gates]
+
+    return [tilesx, tilesy, grid, player, flag, walls, pushables, doors, robots, gates, levelblocks, levelchanges, levelunlocks]
 
 
 
@@ -123,9 +130,9 @@ pushables = generatelevel()[6]
 doors = generatelevel()[7]
 robots = generatelevel()[8]
 gates = generatelevel()[9]
-
-
-
+levelblocks = generatelevel()[10]
+levelchanges = generatelevel()[11]
+levelunlocks = generatelevel()[12]
 
 #GAMELOOP
 isrunning = True
@@ -160,10 +167,17 @@ gatebutton = Button(850 + 125 * 2, 75 + 125 * 2, 100, 100, 0.7, 0.7, "Button.png
 defbutton = Button(850 + 125 * 2, 75 + 125 * 3, 100, 100, 0.7, 0.7, "Button.png", None, "def")
 funcbutton = Button(850 + 125 * 2, 75 + 125 * 4, 100, 100, 0.7, 0.7, "Button.png", None, "func")
 portbutton = Button(850 + 125 * 2, 75 + 125 * 5, 100, 100, 0.7, 0.7, "Button.png", None, "port")
+levelblockbutton = Button(850 + 125 * 3, 75, 100, 100, 0.7, 0.7, "Button.png", None, "lblock")
+levelchangebutton = Button(850 + 125 * 3, 75 + 125, 100, 100, 0.7, 0.7, "Button.png", None, "lchange")
+levelunlockbutton = Button(850 + 125 * 3, 75 + 125 * 2, 100, 100, 0.7, 0.7, "Button.png", None, "unlock")
 
-rtypefield = TypeField(850 + 125 * 3 + 40, 75, 150, 75, 0.9, 0.9, "textfield.png", "R:", 3, [255, 0, 0])
-gtypefield = TypeField(850 + 125 * 3 + 40 , 75 + 125, 150, 75, 0.9, 0.9, "textfield.png", "G:", 3, [0, 255, 0])
-btypefield = TypeField(850 + 125 * 3 + 40, 75 + 125 * 2, 150, 75, 0.9, 0.9, "textfield.png", "B:", 3, [0, 0, 255])
+rtypefield = TypeField(850 + 125 * 3 + 130, 75, 150, 75, 0.9, 0.9, "textfield.png", "R:", 3, [255, 0, 0])
+gtypefield = TypeField(850 + 125 * 3 + 130, 75 + 125, 150, 75, 0.9, 0.9, "textfield.png", "G:", 3, [0, 255, 0])
+btypefield = TypeField(850 + 125 * 3 + 130, 75 + 125 * 2, 150, 75, 0.9, 0.9, "textfield.png", "B:", 3, [0, 0, 255])
+leveltypefield = TypeField(850 + 125 * 3 + 130, 75 + 125, 150, 75, 0.9, 0.9, "textfield.png", "L:", 3, [255, 165, 0])
+minimumtypefield = TypeField(850 + 125 * 3 + 130, 75, 150, 75, 0.9, 0.9, "textfield.png", "Min:", 3, [255, 0, 255])
+maximumtypefield = TypeField(850 + 125 * 3 + 130, 75 + 125, 150, 75, 0.9, 0.9, "textfield.png", "Max:", 3, [255, 255, 0])
+totaltypefield = TypeField(850 + 125 * 3 + 130, 75 + 125 * 2, 150, 75, 0.9, 0.9, "textfield.png", "Tot:", 3, [0, 255, 255])
 
 testmode = False
 tpressed = False
@@ -181,8 +195,6 @@ while isrunning:
         testmode = not testmode
 
 
-
-
     screen.fill([150, 150, 150])
 
     grid.render(screen)
@@ -198,6 +210,9 @@ while isrunning:
         doors = generatelevel()[7]
         robots = generatelevel()[8]
         gates = generatelevel()[9]
+        levelblocks = generatelevel()[10]
+        levelchanges = generatelevel()[11]
+        levelunlocks = generatelevel()[12]
 
         widthincreasebutton.update(screen)
         widthdecreasebutton.update(screen)
@@ -217,7 +232,9 @@ while isrunning:
         defbutton.update(screen)
         funcbutton.update(screen)
         portbutton.update(screen)
-
+        levelblockbutton.update(screen)
+        levelchangebutton.update(screen)
+        levelunlockbutton.update(screen)
 
         text(1300, 725, 80, 20, str(tilesx) + " by " + str(tilesy), [255, 255, 255], screen)
 
@@ -226,20 +243,16 @@ while isrunning:
             for row in testlevel:
                 newtestlevel.append(row + [0])
             testlevel = newtestlevel
-            time.sleep(0.1)
         if heightincreasebutton.checkcollisions():
             testlevel.append([0] * len(testlevel[0]))
-            time.sleep(0.1)
         if widthdecreasebutton.checkcollisions() and len(testlevel[0]) > 1:
             newtestlevel = []
             for row in testlevel:
                 row.remove(row[-1])
                 newtestlevel.append(row)
             testlevel = newtestlevel
-            time.sleep(0.1)
         if heightdecreasebutton.checkcollisions() and len(testlevel) > 1:
             testlevel.remove(testlevel[-1])
-            time.sleep(0.1)
         if playerbutton.checkcollisions():
             mousemode = "player"
         if emptybutton.checkcollisions():
@@ -268,13 +281,18 @@ while isrunning:
             mousemode = "func"
         if portbutton.checkcollisions():
             mousemode = "port"
+        if levelblockbutton.checkcollisions():
+            mousemode = "levelblock"
+        if levelchangebutton.checkcollisions():
+            mousemode = "levelchange"
+        if levelunlockbutton.checkcollisions():
+            mousemode = "levelunlock"
 
         if mousemode == "pblock":
             index = index % 5
-            dirbutton = Button(850 + 125 * 3 + 40, 75 + 125 * 3, 150, 75, 0.7, 0.7, "Button.png", None, ["up", "down", "left", "right", "swap"][index])
+            dirbutton = Button(850 + 125 * 3 + 130, 75 + 125 * 3, 150, 75, 0.7, 0.7, "Button.png", None, ["up", "down", "left", "right", "swap"][index])
             if dirbutton.checkcollisions():
                 index = index + 1
-                time.sleep(0.2)
             dirbutton.update(screen)
             if index == 4:
                 rtypefield.update(screen)
@@ -287,30 +305,27 @@ while isrunning:
             btypefield.update(screen)
         if mousemode == "phead":
             index = index % 4
-            dirbutton = Button(850 + 125 * 3 + 40, 75 + 125 * 3, 150, 75, 0.7, 0.7, "Button.png", None, ["up", "down", "left", "right"][index])
+            dirbutton = Button(850 + 125 * 3 + 130, 75 + 125 * 3, 150, 75, 0.7, 0.7, "Button.png", None, ["up", "down", "left", "right"][index])
             if dirbutton.checkcollisions():
                 index = index + 1
-                time.sleep(0.2)
             dirbutton.update(screen)
             rtypefield.update(screen)
             gtypefield.update(screen)
             btypefield.update(screen)
         if mousemode == "door":
             index = index % 2
-            dirbutton = Button(850 + 125 * 3 + 40, 75 + 125 * 3, 150, 75, 0.7, 0.7, "Button.png", None, ["sensor", "door"][index])
+            dirbutton = Button(850 + 125 * 3 + 130, 75 + 125 * 3, 150, 75, 0.7, 0.7, "Button.png", None, ["sensor", "door"][index])
             if dirbutton.checkcollisions():
                 index = index + 1
-                time.sleep(0.2)
             dirbutton.update(screen)
             rtypefield.update(screen)
             gtypefield.update(screen)
             btypefield.update(screen)
         if mousemode == "gate":
             index = index % 2
-            dirbutton = Button(850 + 125 * 3 + 40, 75 + 125 * 3, 150, 75, 0.7, 0.7, "Button.png", None, ["player", "robot"][index])
+            dirbutton = Button(850 + 125 * 3 + 130, 75 + 125 * 3, 150, 75, 0.7, 0.7, "Button.png", None, ["player", "robot"][index])
             if dirbutton.checkcollisions():
                 index = index + 1
-                time.sleep(0.2)
             dirbutton.update(screen)
             if index == 1:
                 rtypefield.update(screen)
@@ -319,30 +334,43 @@ while isrunning:
         if mousemode == "def":
             index = index % 4
             index2 = index2 % 4
-            dirbutton = Button(850 + 125 * 3 + 40, 75 + 125 * 3, 150, 75, 0.7, 0.7, "Button.png", None, ["up", "down", "left", "right"][index])
-            letterbutton = Button(850 + 125 * 3 + 40, 75 + 125 * 4, 150, 75, 0.7, 0.7, "Button.png", None, ["a", "b", "c", "d"][index2])
+            dirbutton = Button(850 + 125 * 3 + 130, 75 + 125 * 3, 150, 75, 0.7, 0.7, "Button.png", None, ["up", "down", "left", "right"][index])
+            letterbutton = Button(850 + 125 * 3 + 130, 75 + 125 * 4, 150, 75, 0.7, 0.7, "Button.png", None, ["a", "b", "c", "d"][index2])
             if dirbutton.checkcollisions():
                 index = index + 1
-                time.sleep(0.2)
             if letterbutton.checkcollisions():
                 index2 = index2 + 1
-                time.sleep(0.2)
             dirbutton.update(screen)
             letterbutton.update(screen)
         if mousemode == "func":
             index2 = index2 % 4
-            letterbutton = Button(850 + 125 * 3 + 40, 75 + 125 * 4, 150, 75, 0.7, 0.7, "Button.png", None, ["a", "b", "c", "d"][index2])
+            letterbutton = Button(850 + 125 * 3 + 130, 75 + 125 * 4, 150, 75, 0.7, 0.7, "Button.png", None, ["a", "b", "c", "d"][index2])
             if letterbutton.checkcollisions():
                 index2 = index2 + 1
-                time.sleep(0.2)
             letterbutton.update(screen)
         if mousemode == "port":
             index = index % 2
-            dirbutton = Button(850 + 125 * 3 + 40, 75 + 125 * 3, 150, 75, 0.7, 0.7, "Button.png", None, ["export", "import"][index])
+            dirbutton = Button(850 + 125 * 3 + 130, 75 + 125 * 3, 150, 75, 0.7, 0.7, "Button.png", None, ["export", "import"][index])
             if dirbutton.checkcollisions():
                 index = index + 1
-                time.sleep(0.2)
             dirbutton.update(screen)
+        if mousemode == "levelblock":
+            leveltypefield.update(screen)
+        if mousemode == "levelchange":
+            index = index % 4
+            index2 = index2 % 2
+            dirbutton = Button(850 + 125 * 3 + 130, 75 + 125 * 3, 150, 75, 0.7, 0.7, "Button.png", None, ["up", "down", "left", "right"][index])
+            letterbutton = Button(850 + 125 * 3 + 130, 75 + 125 * 4, 150, 75, 0.7, 0.7, "Button.png", None, ["forward", "backward"][index2])
+            if dirbutton.checkcollisions():
+                index = index + 1
+            if letterbutton.checkcollisions():
+                index2 = index2 + 1
+            letterbutton.update(screen)
+            dirbutton.update(screen)
+        if mousemode == "levelunlock":
+            minimumtypefield.update(screen)
+            maximumtypefield.update(screen)
+            totaltypefield.update(screen)
 
 
         for square in grid.squares:
@@ -448,6 +476,14 @@ while isrunning:
                         paste = pyperclip.paste()
                         paste = "testlevel = " + paste
                         exec(paste)
+                if mousemode == "levelblock":
+                    if leveltypefield.textstr != "":
+                        testlevel[squarecoords[1]][squarecoords[0]] = ["levelblock", int(leveltypefield.textstr)]
+                if mousemode == "levelchange":
+                    testlevel[squarecoords[1]][squarecoords[0]] = ["levelchange", ["up", "down", "left", "right"][index], ["forward", "backward"][index2]]
+                if mousemode == "levelunlock":
+                    if minimumtypefield.textstr != "" and maximumtypefield.textstr != "" and totaltypefield.textstr != "":
+                        testlevel[squarecoords[1]][squarecoords[0]] = ["levelunlock", int(minimumtypefield.textstr), int(maximumtypefield.textstr), int(totaltypefield.textstr)]
 
 
     if doors != []:
@@ -458,7 +494,7 @@ while isrunning:
         flag.render(screen)
     if walls != []:
         for wall in walls:
-            wall.render(screen)
+            wall.render(screen, walls)
     if pushables != []:
         for pushable in pushables:
             if str(type(pushable)) == "<class 'player.ProgramHeader'>":
@@ -476,7 +512,7 @@ while isrunning:
                             pushable.flashlist.remove(flash)
     if robots != []:
         for robot in robots:
-            robot.update(screen, walls, pushables, doors, player, robots, gates)
+            robot.update(screen, walls, pushables, doors, player, robots, gates, levelunlocks)
             if checkcrush(robot, doors):
                 robots.remove(robot)
 
@@ -488,7 +524,7 @@ while isrunning:
                     pushable.swapflashlist.remove(swapflash)
 
     if player != None:
-        player.update(screen, walls, pushables, doors, robots, gates)
+        player.update(screen, walls, pushables, doors, robots, gates, levelunlocks)
         if checkcrush(player, doors):
             player = None
         newplayerpos = [player.gridx, player.gridy]
@@ -496,6 +532,15 @@ while isrunning:
     if gates != []:
         for gate in gates:
             gate.update(screen)
+
+    for levelblock in levelblocks:
+        levelblock.render(screen)
+
+    for levelchange in levelchanges:
+        levelchange.render(screen)
+
+    for levelunlock in levelunlocks:
+        levelunlock.update(screen, [])
 
     gridstate = {
         "doors":doors,
@@ -520,7 +565,6 @@ while isrunning:
     for event in events:
         if event.type == pygame.QUIT:
             isrunning = False
-
 
     pygame.display.update()
 
