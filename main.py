@@ -221,6 +221,9 @@ for i in range(FIRSTLEVELNUM):
 gridstatetracker = 0
 
 startbutton = Button(375, 375, 567, 67, 0.5, 0.95, "Button.png", "placeholder", "Start Game")
+newstartbutton = Button(375, 300, 567, 67, 0.5, 0.95, "Button.png", "placeholder", "Start New Game")
+cutscenebutton = Button(WIDTH//2,HEIGTH//2 , WIDTH, HEIGTH, 0.5, 0.95, "Button.png", "placeholder", "Next Cutscene")
+
 brightslider = Slider(382, 290, [100, 100, 100], 167, 5, 1, "Slider.png", 35, 35)
 pastgamestate = "startmenu"
 brightsurface = pygame.surface.Surface([WIDTH, HEIGTH], pygame.SRCALPHA)
@@ -235,8 +238,26 @@ while isrunning:
         pygame.display.set_caption("")
         text(375, 50, 500, 50, "Game Title", [100, 100, 100], screen)
         startbutton.update(screen)
+        newstartbutton.update(screen)
+        ambient.play()
+
+
         if startbutton.checkcollisions():
             gamestate = "game"
+        if newstartbutton.checkcollisions():
+            gamestate = "cutscene"
+    elif gamestate == "cutscene":
+        cutscenebutton.update(screen)
+        screen.blit(cutimg, [0,0])
+        if cutscenebutton.checkcollisions():
+            number += 1
+        if number == 1:
+            screen.blit(cutimg2, [0,0])
+        elif number ==2:
+            screen.blit(cutimg3, [0,0])
+        elif number == 3:
+            gamestate = "game"
+    #Player(self.coordsx, self.coordsy, self.w, self.h, self.tilesx, self.tilesy, None)
     elif gamestate == "game":
             screen.fill([100, 100, 100])
             grid.render(screen)

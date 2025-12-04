@@ -434,14 +434,14 @@ while isrunning:
                         if isvalid:
                             testlevel[squarecoords[1]][squarecoords[0]] = ["robot", color]
                 if mousemode == "phead":
-                    if rtypefield.textstr != "" and gtypefield.textstr != "" and btypefield.textstr != "":
-                        color = [int(rtypefield.textstr), int(gtypefield.textstr), int(btypefield.textstr)]
-                        isvalid = True
-                        for value in color:
-                            if value > 255:
-                                isvalid = False
-                        if isvalid:
-                            testlevel[squarecoords[1]][squarecoords[0]] = ["programheader", ["up", "down", "left", "right"][index], color]
+                        if rtypefield.textstr != "" and gtypefield.textstr != "" and btypefield.textstr != "":
+                            color = [int(rtypefield.textstr), int(gtypefield.textstr), int(btypefield.textstr)]
+                            isvalid = True
+                            for value in color:
+                                if value > 255:
+                                    isvalid = False
+                            if isvalid:
+                                testlevel[squarecoords[1]][squarecoords[0]] = ["programheader", ["up", "down", "left", "right"][index], color]
                 if mousemode == "battery":
                     testlevel[squarecoords[1]][squarecoords[0]] = 5
                 if mousemode == "door":
