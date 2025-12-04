@@ -227,10 +227,12 @@ cutscenebutton = Button(WIDTH//2,HEIGTH//2 , WIDTH, HEIGTH, 0.5, 0.95, "Button.p
 brightslider = Slider(382, 290, [100, 100, 100], 167, 5, 1, "Slider.png", 35, 35)
 pastgamestate = "startmenu"
 brightsurface = pygame.surface.Surface([WIDTH, HEIGTH], pygame.SRCALPHA)
-newlevel = 0
-completedlevels = set()
-prevlevelselectnum = 0
-
+cutimg = pygame.image.load("Cut1.png")
+cutimg = pygame.transform.scale(cutimg, [WIDTH, HEIGTH])
+cutimg2 = pygame.image.load("Cut2.png")
+cutimg2 = pygame.transform.scale(cutimg2, [WIDTH, HEIGTH])
+cutimg3 = pygame.image.load("Cut3.png")
+cutimg3 = pygame.transform.scale(cutimg3, [WIDTH, HEIGTH])
 while isrunning:
     pygame.display.set_icon(pygame.image.load("Player.png"))
     if gamestate == "startmenu":
