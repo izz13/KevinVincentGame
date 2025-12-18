@@ -3,7 +3,8 @@ from grid import Grid
 from player import Player, Flag, Wall, Pushable, Door, Robot, ProgramHeader, Gate, Function, LevelBlock, LevelChange, LevelUnlock
 import level
 from ui import Button, text, Slider
-
+from particle import Particle
+import random
 
 pygame.init()
 WIDTH = 750
@@ -261,6 +262,7 @@ pastgamestate = "startmenu"
 brightsurface = pygame.surface.Surface([WIDTH, HEIGTH], pygame.SRCALPHA)
 pastscreensurface = None
 cutsceneimages = []
+particles = []
 for filename in ["Cut1.png", "Cut2.png", "Cut3.png"]:
    image = pygame.image.load(filename)
    image = pygame.transform.scale(image, [WIDTH, HEIGTH])
@@ -480,12 +482,15 @@ while isrunning:
            for robot in robots:
                if robot.state != "idle" and robot.state != "movecooldown" or player.state != "idle" and player.state != "movecooldown":
                    updateframe = False
+           for particle in particles:
+               if particle.xv ** 2 + particle.yv ** 2 <= 0.01:
+                   particles.remove(particle)
+               else:
+                   particle.update(screen)
 
 
            if updateframe:
                gridstatetracker += 1
-
-
                pastpushables = []
                for pushable in pushables:
                    if isinstance(pushable, Pushable):
@@ -533,6 +538,12 @@ while isrunning:
                        aniframes = 0
                        newlevel = prevlevelselectnum
                        completedlevels.add(levelnumber)
+                       for i in range(12):
+                           particlex = random.randint(0, WIDTH)
+                           particley = random.randint(0, HEIGTH)
+                           for n in range(10):
+                                particles.append(Particle(particlex, particley, 5, 5, random.randint(0, 360), 0.9,
+                                                 random.randint(5, 20)))
                        #pygame.mixer.Sound("Winsound.wav").play()
 
 
