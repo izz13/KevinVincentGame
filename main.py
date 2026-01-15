@@ -19,7 +19,6 @@ controls = 0
 
 
 
-
 def checkcrush(object, doors):
    for door in doors:
        if object.coordsx == door.coordsx and object.coordsy == door.coordsy and door.frame == 1:
@@ -128,7 +127,7 @@ def generatelevel(index):
 
 isanim = False
 def anim(newlevelnum, screen):
-   global isanim, aniframes
+   global isanim, aniframes, iswin
    global tilesx, tilesy, grid, player, flag, walls, pushables, doors, robots, gates, levelblocks, undomoves, levelchanges, levelnumber, levelunlocks
    global levelselectundomoves
    surface = pygame.surface.Surface((WIDTH, HEIGTH), pygame.SRCALPHA)
@@ -213,6 +212,8 @@ def anim(newlevelnum, screen):
            pygame.draw.rect(surface, [0, 0, 0, 255 - (((aniframes - 46) / 45) * 255)], pygame.rect.Rect(0, 0, WIDTH, HEIGTH))
        if aniframes > 91:
            isanim = False
+           iswin = False
+
        else:
            screen.blit(surface, (0, 0))
            aniframes += 1
@@ -242,6 +243,7 @@ levelunlocks = levelList[12]
 #GAMELOOP
 isrunning = True
 gamestate = "startmenu"
+iswin = False
 aniframes = 0
 undomoves = []
 levelselectundomoves = []
@@ -260,6 +262,9 @@ brightslider = Slider(382, 290, [100, 100, 100], 167, 5, 1, "Slider.png", 35, 35
 completedlevels = set()
 pastgamestate = "startmenu"
 brightsurface = pygame.surface.Surface([WIDTH, HEIGTH], pygame.SRCALPHA)
+winimg = pygame.image.load("wintext.png")
+winimg = pygame.transform.scale(winimg, [250, 250])
+winrect = winimg.get_rect(center=(WIDTH // 2, HEIGTH // 2))
 pastscreensurface = None
 cutsceneimages = []
 particles = []
@@ -535,7 +540,8 @@ while isrunning:
                if player.state == "movecooldown" or player.state == "idle":
                    if [player.coordsx, player.coordsy] == [flag.coordsx, flag.coordsy] and not isanim:
                        isanim = True
-                       aniframes = 0
+                       iswin = True
+                       aniframes = -95
                        newlevel = prevlevelselectnum
                        completedlevels.add(levelnumber)
                        for i in range(12):
@@ -560,12 +566,6 @@ while isrunning:
                newlevel = prevlevelselectnum
 
 
-
-
-
-
-
-
            if pygame.key.get_just_pressed()[pygame.K_r] and not isanim and levelnumber >= FIRSTLEVELNUM:
                isanim = True
                aniframes = 0
@@ -576,7 +576,15 @@ while isrunning:
 
            #HANDLE ANIMATION BETWEEN LEVELS
            if isanim:
-               anim(newlevel, screen)
+               if iswin:
+                 if aniframes <= 46:
+                    screen.blit(winimg, winrect)
+                 if aniframes >= 0:
+                     anim(newlevel, screen)
+                 else:
+                     aniframes += 1
+               else:
+                   anim(newlevel, screen)
 
 
    if gamestate != "settings" and pygame.key.get_just_pressed()[pygame.K_ESCAPE]:
