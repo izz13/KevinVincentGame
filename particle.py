@@ -19,6 +19,7 @@ class Particle:
         self.yv = -math.sin(math.radians(direction)) * speed
         self.aniframes = 0
         self.color = [255, 255, 0]
+
     def updatepos(self):
         self.x += self.xv
         self.y += self.yv

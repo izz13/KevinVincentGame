@@ -499,7 +499,7 @@ while isrunning:
                        pastpushables.append([pushable.coordsx, pushable.coordsy, pushable.w, pushable.h, pushable.tilesx, pushable.tilesy, pushable.ogspritesheet, pushable.frame, pushable.frame2, pushable.dir, pushable.color, "ProgramHeader"])
                    elif isinstance(pushable, Function):
                        pastpushables.append([pushable.coordsx, pushable.coordsy, pushable.w, pushable.h, pushable.tilesx, pushable.tilesy, pushable.ogimage, pushable.frame, pushable.frame2, pushable.frame3, pushable.command, pushable.dir, "Function"])
-
+                    
 
                pastdoors = []
                for door in doors:
