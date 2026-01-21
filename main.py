@@ -3,7 +3,8 @@ from grid import Grid
 from player import Player, Flag, Wall, Pushable, Door, Robot, ProgramHeader, Gate, Function, LevelBlock, LevelChange, LevelUnlock
 import level
 from ui import Button, text, Slider
-
+from particle import Particle
+import random
 
 pygame.init()
 WIDTH = 750
@@ -15,7 +16,6 @@ clock = pygame.time.Clock()
 fps = 60
 dt = 0
 controls = 0
-
 
 
 
@@ -127,7 +127,7 @@ def generatelevel(index):
 
 isanim = False
 def anim(newlevelnum, screen):
-   global isanim, aniframes
+   global isanim, aniframes, iswin
    global tilesx, tilesy, grid, player, flag, walls, pushables, doors, robots, gates, levelblocks, undomoves, levelchanges, levelnumber, levelunlocks
    global levelselectundomoves
    surface = pygame.surface.Surface((WIDTH, HEIGTH), pygame.SRCALPHA)
@@ -212,6 +212,8 @@ def anim(newlevelnum, screen):
            pygame.draw.rect(surface, [0, 0, 0, 255 - (((aniframes - 46) / 45) * 255)], pygame.rect.Rect(0, 0, WIDTH, HEIGTH))
        if aniframes > 91:
            isanim = False
+           iswin = False
+
        else:
            screen.blit(surface, (0, 0))
            aniframes += 1
@@ -241,6 +243,7 @@ levelunlocks = levelList[12]
 #GAMELOOP
 isrunning = True
 gamestate = "startmenu"
+iswin = False
 aniframes = 0
 undomoves = []
 levelselectundomoves = []
@@ -259,8 +262,12 @@ brightslider = Slider(382, 290, [100, 100, 100], 167, 5, 1, "Slider.png", 35, 35
 completedlevels = set()
 pastgamestate = "startmenu"
 brightsurface = pygame.surface.Surface([WIDTH, HEIGTH], pygame.SRCALPHA)
+winimg = pygame.image.load("wintext.png")
+winimg = pygame.transform.scale(winimg, [250, 250])
+winrect = winimg.get_rect(center=(WIDTH // 2, HEIGTH // 2))
 pastscreensurface = None
 cutsceneimages = []
+particles = []
 for filename in ["Cut1.png", "Cut2.png", "Cut3.png"]:
    image = pygame.image.load(filename)
    image = pygame.transform.scale(image, [WIDTH, HEIGTH])
@@ -480,12 +487,15 @@ while isrunning:
            for robot in robots:
                if robot.state != "idle" and robot.state != "movecooldown" or player.state != "idle" and player.state != "movecooldown":
                    updateframe = False
+           for particle in particles:
+               if particle.xv ** 2 + particle.yv ** 2 <= 0.01:
+                   particles.remove(particle)
+               else:
+                   particle.update(screen)
 
 
            if updateframe:
                gridstatetracker += 1
-
-
                pastpushables = []
                for pushable in pushables:
                    if isinstance(pushable, Pushable):
@@ -494,7 +504,7 @@ while isrunning:
                        pastpushables.append([pushable.coordsx, pushable.coordsy, pushable.w, pushable.h, pushable.tilesx, pushable.tilesy, pushable.ogspritesheet, pushable.frame, pushable.frame2, pushable.dir, pushable.color, "ProgramHeader"])
                    elif isinstance(pushable, Function):
                        pastpushables.append([pushable.coordsx, pushable.coordsy, pushable.w, pushable.h, pushable.tilesx, pushable.tilesy, pushable.ogimage, pushable.frame, pushable.frame2, pushable.frame3, pushable.command, pushable.dir, "Function"])
-
+                    
 
                pastdoors = []
                for door in doors:
@@ -530,9 +540,16 @@ while isrunning:
                if player.state == "movecooldown" or player.state == "idle":
                    if [player.coordsx, player.coordsy] == [flag.coordsx, flag.coordsy] and not isanim:
                        isanim = True
-                       aniframes = 0
+                       iswin = True
+                       aniframes = -95
                        newlevel = prevlevelselectnum
                        completedlevels.add(levelnumber)
+                       for i in range(12):
+                           particlex = random.randint(0, WIDTH)
+                           particley = random.randint(0, HEIGTH)
+                           for n in range(10):
+                                particles.append(Particle(particlex, particley, 5, 5, random.randint(0, 360), 0.9,
+                                                 random.randint(5, 20)))
                        #pygame.mixer.Sound("Winsound.wav").play()
 
 
@@ -549,12 +566,6 @@ while isrunning:
                newlevel = prevlevelselectnum
 
 
-
-
-
-
-
-
            if pygame.key.get_just_pressed()[pygame.K_r] and not isanim and levelnumber >= FIRSTLEVELNUM:
                isanim = True
                aniframes = 0
@@ -565,7 +576,15 @@ while isrunning:
 
            #HANDLE ANIMATION BETWEEN LEVELS
            if isanim:
-               anim(newlevel, screen)
+               if iswin:
+                 if aniframes <= 46:
+                    screen.blit(winimg, winrect)
+                 if aniframes >= 0:
+                     anim(newlevel, screen)
+                 else:
+                     aniframes += 1
+               else:
+                   anim(newlevel, screen)
 
 
    if gamestate != "settings" and pygame.key.get_just_pressed()[pygame.K_ESCAPE]:
