@@ -262,6 +262,12 @@ exitbutton = Button(WIDTH // 2, HEIGTH // 2 + 150, 100, 50, 0.5, 0.95, "Button.p
 
 brightslider = Slider(382, 290, [100, 100, 100], 167, 5, 1, "Slider.png", 35, 35)
 completedlevels = set()
+boyimg = pygame.image.load("boy.png")
+csimg = pygame.image.load("cs.png")
+girlimg = pygame.image.load("girl.png")
+csimg = pygame.transform.scale(csimg, [WIDTH, HEIGTH])
+leftbutton = Button(WIDTH/2, HEIGTH*0.75, 100, 50, 0.5, 0.95, "Button.png", "placeholder", "<--")
+rightbutton = Button(WIDTH/1.5, HEIGTH*0.75, 100, 50, 0.5, 0.95, "Button.png", "placeholder", "-->")
 pastgamestate = "startmenu"
 brightsurface = pygame.surface.Surface([WIDTH, HEIGTH], pygame.SRCALPHA)
 winimg = pygame.image.load("wintext.png")
@@ -526,7 +532,7 @@ while isrunning:
                    "walls": walls,
                    "pushables": pastpushables,
                    "robots": pastrobots,
-                   "player": [player.coordsx, player.coordsy, player.w, player.h, player.tilesx, player.tilesy, player.image, [player.gridx, player.gridy]],
+                   "player": [player.coordsx, player.coordsy, player.w, player.h, player.tilesx, player.tilesy, player.images, [player.gridx, player.gridy]],
                    "gates": gates,
                    "gridsize" : [grid.tilesx, grid.tilesy],
                    "levelblocks" : levelblocks,
@@ -619,9 +625,21 @@ while isrunning:
            gamestate = "startmenu"
        if pygame.key.get_just_pressed()[pygame.K_ESCAPE]:
            gamestate = pastgamestate
+
    elif gamestate == "cs":
        mouse = pygame.mouse.get_pos()
        screen.fill([100, 100, 100])
+       screen.blit(csimg, [0, 0])
+       playerimg = player.frontImage.copy()
+       playerimg = pygame.transform.scale(playerimg, [200, 200])
+
+       screen.blit(playerimg, [50, 300])
+       rightbutton.update(screen)
+       leftbutton.update(screen)
+       if rightbutton.checkcollisions():
+           player.setimgs("right")
+       if leftbutton.checkcollisions():
+           player.setimgs("left")
 
 
 

@@ -20,12 +20,14 @@ class Player:
        self.facing = None
        self.tilesx = tilesx
        self.tilesy = tilesy
-       self.image = image
-       self.spritesheet = SpriteSheet(self.image)
-       self.backImage = self.spritesheet.get_sprite(0, 64, 64, self.w, self.h)
-       self.frontImage = self.spritesheet.get_sprite(1, 64, 64, self.w, self.h)
-       self.sideImage = self.spritesheet.get_sprite(2, 64, 64, self.w, self.h)
-       self.reverseSideImage = self.spritesheet.get_sprite(3, 64, 64, self.w, self.h)
+       #self.image = image
+       #self.spritesheet = SpriteSheet(self.image)
+       self.boysheet = SpriteSheet("boy.png")
+       self.girlsheet = SpriteSheet("girl.png")
+       self.sheets = [self.boysheet, self.girlsheet]
+       self.sheetindex = 0
+       self.setimgs("left")
+
        '''
        self.frontImage = pygame.transform.scale(pygame.image.load("FrontPOV.png"), [w, h])
        self.backImage = pygame.transform.scale(pygame.image.load("BackPOV.png"), [w, h])
@@ -35,7 +37,6 @@ class Player:
        self.sideImage.set_colorkey([0, 0, 0])
        self.reverseSideImage = pygame.transform.flip(self.sideImage, True, False)
        '''''
-       self.images = {"movingup" : self.backImage, "movingdown" : self.frontImage, "movingleft" : self.reverseSideImage, "movingright" : self.sideImage}
        self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
        self.aniframes = 0
        self.pastaniframes = 0
@@ -46,7 +47,23 @@ class Player:
        self.controls = 0
        self.keys = [[pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT], [pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d]]
 
-
+   def setimgs(self, direction="None"):
+       if direction == "left":
+           if self.sheetindex > 0:
+               self.sheetindex -= 1
+           else:
+               self.sheetindex = 0
+       elif direction == "right":
+           if self.sheetindex < len(self.sheets) -1:
+               self.sheetindex += 1
+           else:
+               self.sheetindex = len(self.sheets) -1
+       self.spritesheet = self.sheets[self.sheetindex]
+       self.backImage = self.spritesheet.get_sprite(0, 64, 64, self.w, self.h)
+       self.frontImage = self.spritesheet.get_sprite(1, 64, 64, self.w, self.h)
+       self.sideImage = self.spritesheet.get_sprite(2, 64, 64, self.w, self.h)
+       self.reverseSideImage = self.spritesheet.get_sprite(3, 64, 64, self.w, self.h)
+       self.images = {"movingup" : self.backImage, "movingdown" : self.frontImage, "movingleft" : self.reverseSideImage, "movingright" : self.sideImage}
 
 
    def render(self, screen):
