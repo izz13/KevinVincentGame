@@ -619,6 +619,10 @@ while isrunning:
            gamestate = "startmenu"
        if pygame.key.get_just_pressed()[pygame.K_ESCAPE]:
            gamestate = pastgamestate
+   elif gamestate == "cs":
+       mouse = pygame.mouse.get_pos()
+       screen.fill([100, 100, 100])
+
 
 
 
