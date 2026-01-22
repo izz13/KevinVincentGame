@@ -22,6 +22,7 @@ class Player:
        self.facing = None
        self.tilesx = tilesx
        self.tilesy = tilesy
+
        self.frontImage = pygame.transform.scale(pygame.image.load("FrontPOV.png"), [w, h])
        self.backImage = pygame.transform.scale(pygame.image.load("BackPOV.png"), [w, h])
        self.sideImage = pygame.transform.scale(pygame.image.load("SidePOV.png"), [w, h])
