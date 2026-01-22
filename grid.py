@@ -37,3 +37,4 @@ class Squares:
 
     def render(self, screen):
         screen.blit(self.image, self.rect)
+

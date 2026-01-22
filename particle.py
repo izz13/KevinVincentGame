@@ -2,7 +2,6 @@ import math
 import pygame
 import random
 pygame.init()
-
 class Particle:
     def __init__(self, x, y, w, h,  direction, friction, speed):
         self.x = x
@@ -33,7 +32,6 @@ class Particle:
     def update(self, screen):
         self.updatepos()
         self.render(screen)
-
 if __name__ == "__main__":
     pygame.init()
     particles = []
@@ -43,18 +41,12 @@ if __name__ == "__main__":
     fps = 60
     def spawnparticles():
         global particles
-
         mousepos = pygame.mouse.get_pos()
-        clicked = pygame.mouse.get_just_pressed()[0]
+        clicked = pygame.mouse.get_pressed()[0]
         particlenum = random.randint(10, 15)
         if clicked:
-
             for x in range(particlenum):
-                particles.append(Particle(mousepos[0], mousepos[1], 5, 5, random.randint(0, 360), 0.9,
-                                      random.randint(5, 20)))
-
-
-
+                particles.append(Particle(mousepos[0], mousepos[1], 5, 5, random.randint(0, 360), 0.9, random.randint(5, 20)))
     while running:
         events = pygame.event.get()
         for event in events:
@@ -68,12 +60,3 @@ if __name__ == "__main__":
             particle.update(screen)
         clock.tick(fps)
         pygame.display.update()
-
-
-
-
-
-
-
-
-

@@ -47,7 +47,7 @@ def generatelevel(index):
        for n in range(tilesx):
            currenttile = currentlevel[i][n]
            if currenttile == 1:
-               player = Player(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "Player.png")
+               player = Player(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "boy.png")
            elif currenttile == 2:
                flag = Flag(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "Flag.png")
            elif currenttile == 3:
@@ -253,8 +253,10 @@ gridstatetracker = 0
 
 
 startbutton = Button(375, 375, 567, 67, 0.5, 0.95, "Button.png", "placeholder", "Start Game")
+charactercustombutton = Button(375, 450, 567, 67, 0.5, 0.95, "Button.png", "placeholder", "Character Select")
 cutscenebutton = Button(WIDTH//2,HEIGTH//2 , WIDTH, HEIGTH, 0.5, 0.95, "Button.png", "placeholder", "Next Cutscene")
-
+levelselectbutton = Button(WIDTH // 2, HEIGTH // 2 + 75, 300, 50, 0.5, 0.95, "Button.png", "placeholder", "Level Select")
+exitbutton = Button(WIDTH // 2, HEIGTH // 2 + 150, 100, 50, 0.5, 0.95, "Button.png", "placeholder", "Exit")
 
 
 
@@ -284,7 +286,9 @@ while isrunning:
        pygame.display.set_caption("")
        text(375, 50, 500, 50, "Game Title", [100, 100, 100], screen)
        startbutton.update(screen)
-       #ambient.play()
+       charactercustombutton.update(screen)
+       if charactercustombutton.checkcollisions():
+           gamestate = "cs"
        if startbutton.checkcollisions():
            gamestate = "cutscene"
    elif gamestate == "cutscene":
@@ -522,7 +526,7 @@ while isrunning:
                    "walls": walls,
                    "pushables": pastpushables,
                    "robots": pastrobots,
-                   "player": [player.coordsx, player.coordsy, player.w, player.h, player.tilesx, player.tilesy, None, [player.gridx, player.gridy]],
+                   "player": [player.coordsx, player.coordsy, player.w, player.h, player.tilesx, player.tilesy, player.image, [player.gridx, player.gridy]],
                    "gates": gates,
                    "gridsize" : [grid.tilesx, grid.tilesy],
                    "levelblocks" : levelblocks,
@@ -551,12 +555,6 @@ while isrunning:
                                 particles.append(Particle(particlex, particley, 5, 5, random.randint(0, 360), 0.9,
                                                  random.randint(5, 20)))
                        #pygame.mixer.Sound("Winsound.wav").play()
-
-
-           if pygame.key.get_just_pressed()[pygame.K_b] and not isanim and levelnumber >= FIRSTLEVELNUM:
-               isanim = True
-               aniframes = 0
-               newlevel = prevlevelselectnum
 
 
            if pygame.key.get_just_pressed()[pygame.K_e] and not isanim and levelnumber >= FIRSTLEVELNUM:
@@ -606,16 +604,21 @@ while isrunning:
        brightslider.update(screen)
        controlButton = Button(WIDTH // 2, HEIGTH // 2, 200, 50, 0.5, 0.95, "Button.png", "placeholder", ["arrow", "wasd"][int(controls)])
        controlButton.update(screen)
+       exitbutton.update(screen)
+       levelselectbutton.update(screen)
        if controlButton.checkcollisions():
            controls = int(controls)
            controls += 1
            controls = controls % 2
+       if levelselectbutton.checkcollisions() and not isanim and levelnumber >= FIRSTLEVELNUM:
+           isanim = True
+           aniframes = 0
+           newlevel = prevlevelselectnum
+           gamestate = pastgamestate
+       if exitbutton.checkcollisions():
+           gamestate = "startmenu"
        if pygame.key.get_just_pressed()[pygame.K_ESCAPE]:
            gamestate = pastgamestate
-
-
-
-
 
 
 
