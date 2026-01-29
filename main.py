@@ -17,7 +17,7 @@ fps = 60
 dt = 0
 controls = 0
 
-
+playerimage = "boy.png"
 
 def checkcrush(object, doors):
    for door in doors:
@@ -47,7 +47,7 @@ def generatelevel(index):
        for n in range(tilesx):
            currenttile = currentlevel[i][n]
            if currenttile == 1:
-               player = Player(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "boy.png")
+               player = Player(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, playerimage)
            elif currenttile == 2:
                flag = Flag(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "Flag.png")
            elif currenttile == 3:
@@ -532,7 +532,7 @@ while isrunning:
                    "walls": walls,
                    "pushables": pastpushables,
                    "robots": pastrobots,
-                   "player": [player.coordsx, player.coordsy, player.w, player.h, player.tilesx, player.tilesy, player.images, [player.gridx, player.gridy]],
+                   "player": [player.coordsx, player.coordsy, player.w, player.h, player.tilesx, player.tilesy, playerimage, [player.gridx, player.gridy]],
                    "gates": gates,
                    "gridsize" : [grid.tilesx, grid.tilesy],
                    "levelblocks" : levelblocks,
@@ -630,16 +630,20 @@ while isrunning:
        mouse = pygame.mouse.get_pos()
        screen.fill([100, 100, 100])
        screen.blit(csimg, [0, 0])
-       playerimg = player.frontImage.copy()
-       playerimg = pygame.transform.scale(playerimg, [200, 200])
+       displayimg = player.frontImage.copy()
+       displayimg = pygame.transform.scale(displayimg, [200, 200])
 
-       screen.blit(playerimg, [50, 300])
+       screen.blit(displayimg, [50, 300])
        rightbutton.update(screen)
        leftbutton.update(screen)
        if rightbutton.checkcollisions():
-           player.setimgs("right")
+           playerimage = "boy.png"
+           player.image = playerimage
+           player.updateimage()
        if leftbutton.checkcollisions():
-           player.setimgs("left")
+           playerimage = "girl.png"
+           player.image = playerimage
+           player.updateimage()
 
 
 

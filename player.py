@@ -20,23 +20,19 @@ class Player:
        self.facing = None
        self.tilesx = tilesx
        self.tilesy = tilesy
-       #self.image = image
-       #self.spritesheet = SpriteSheet(self.image)
-       self.boysheet = SpriteSheet("boy.png")
-       self.girlsheet = SpriteSheet("girl.png")
-       self.sheets = [self.boysheet, self.girlsheet]
-       self.sheetindex = 0
-       self.setimgs("left")
+       self.image = image
+       self.spritesheet = SpriteSheet(self.image)
 
-       '''
-       self.frontImage = pygame.transform.scale(pygame.image.load("FrontPOV.png"), [w, h])
-       self.backImage = pygame.transform.scale(pygame.image.load("BackPOV.png"), [w, h])
-       self.sideImage = pygame.transform.scale(pygame.image.load("SidePOV.png"), [w, h])
+       self.frontImage = self.spritesheet.get_sprite(1, 64, 64, self.w, self.h)
+       self.backImage = self.spritesheet.get_sprite(0, 64, 64, self.w, self.h)
+       self.sideImage = self.spritesheet.get_sprite(2, 64, 64, self.w, self.h)
+       self.reverseSideImage = self.spritesheet.get_sprite(3, 64, 64, self.w, self.h)
        self.frontImage.set_colorkey([0, 0, 0])
        self.backImage.set_colorkey([0, 0, 0])
        self.sideImage.set_colorkey([0, 0, 0])
-       self.reverseSideImage = pygame.transform.flip(self.sideImage, True, False)
-       '''''
+       self.reverseSideImage.set_colorkey([0, 0, 0])
+       self.images = {"movingup" : self.backImage, "movingdown" : self.frontImage, "movingleft" : self.reverseSideImage, "movingright" : self.sideImage}
+
        self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
        self.aniframes = 0
        self.pastaniframes = 0
@@ -46,7 +42,7 @@ class Player:
        self.currentimage = self.frontImage
        self.controls = 0
        self.keys = [[pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT], [pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d]]
-
+   '''
    def setimgs(self, direction="None"):
        if direction == "left":
            if self.sheetindex > 0:
@@ -64,15 +60,24 @@ class Player:
        self.sideImage = self.spritesheet.get_sprite(2, 64, 64, self.w, self.h)
        self.reverseSideImage = self.spritesheet.get_sprite(3, 64, 64, self.w, self.h)
        self.images = {"movingup" : self.backImage, "movingdown" : self.frontImage, "movingleft" : self.reverseSideImage, "movingright" : self.sideImage}
-
+       '''
+   def updateimage(self):
+       self.spritesheet = SpriteSheet(self.image)
+       self.frontImage = self.spritesheet.get_sprite(1, 64, 64, self.w, self.h)
+       self.backImage = self.spritesheet.get_sprite(0, 64, 64, self.w, self.h)
+       self.sideImage = self.spritesheet.get_sprite(2, 64, 64, self.w, self.h)
+       self.reverseSideImage = self.spritesheet.get_sprite(3, 64, 64, self.w, self.h)
+       self.frontImage.set_colorkey([0, 0, 0])
+       self.backImage.set_colorkey([0, 0, 0])
+       self.sideImage.set_colorkey([0, 0, 0])
+       self.reverseSideImage.set_colorkey([0, 0, 0])
 
    def render(self, screen):
+       self.updateimage()
+       self.images = {"movingup" : self.backImage, "movingdown" : self.frontImage, "movingleft" : self.reverseSideImage, "movingright" : self.sideImage}
        if self.state in self.images.keys():
            self.currentimage = self.images[self.state]
        screen.blit(self.currentimage, self.rect)
-
-
-
 
    def checkcollisions(self, walls, xvel, yvel, pushables, tilesx, tilesy, doors, robots, gates):
        if self.coordsx + xvel < 0 or self.coordsx + xvel > tilesx - 1 or self.coordsy + yvel < 0 or self.coordsy + yvel > tilesy - 1:
@@ -199,84 +204,6 @@ class Player:
            if self.aniframes - self.pastaniframes >= 2:
                self.state = "idle"
        self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
-   def updatepush(self, pushables, robots, xvel, yvel): #This took way to long 😭
-        if pushables != []:
-            for pushable in pushables:
-                if math.dist([self.coordsx + xvel, self.coordsy + yvel], [pushable.coordsx, pushable.coordsy]) <= 0.00000001:
-                    pushable.move(xvel / 15, yvel / 15)
-                    if self.aniframes - self.pastaniframes == 15:
-                        pushable.coordsx = round(pushable.coordsx)
-                        pushable.coordsy = round(pushable.coordsy)
-        if robots != []:
-            for robot in robots:
-                if math.dist([self.coordsx + xvel, self.coordsy + yvel], [robot.coordsx, robot.coordsy]) <= 0.00000001:
-                    robot.coordsx += xvel / 15
-                    robot.coordsy += yvel / 15
-                if self.aniframes - self.pastaniframes == 15:
-                    robot.coordsx = round(robot.coordsx)
-                    robot.coordsy = round(robot.coordsy)
-   def updatepos(self, walls, pushables, doors, robots, gates, levelunlocks):
-        self.keys = [[pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT], [pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d]]
-        self.aniframes += 1
-        if self.state == "idle":
-            if pygame.key.get_pressed()[self.keys[int(self.controls)][0]]:
-                self.facing = "movingup"
-                if self.checkcollisions(walls + levelunlocks, 0, -1, pushables, self.tilesx, self.tilesy, doors, robots, gates):
-                    self.state = "movingup"
-                    self.pastaniframes = self.aniframes
-            if pygame.key.get_pressed()[self.keys[int(self.controls)][1]]:
-                self.facing = "movingdown"
-                if self.checkcollisions(walls + levelunlocks, 0, 1, pushables, self.tilesx, self.tilesy, doors, robots, gates):
-                    self.state = "movingdown"
-                    self.pastaniframes = self.aniframes
-            if pygame.key.get_pressed()[self.keys[int(self.controls)][2]]:
-                self.facing = "movingleft"
-                if self.checkcollisions(walls + levelunlocks, -1, 0, pushables, self.tilesx, self.tilesy, doors, robots, gates):
-                    self.state = "movingleft"
-                    self.pastaniframes = self.aniframes
-            if pygame.key.get_pressed()[self.keys[int(self.controls)][3]]:
-                self.facing = "movingright"
-                if self.checkcollisions(walls + levelunlocks, 1, 0, pushables, self.tilesx, self.tilesy, doors, robots, gates):
-                    self.state = "movingright"
-                    self.pastaniframes = self.aniframes
-        if self.state == "movingup":
-            if self.aniframes - self.pastaniframes > 15:
-                self.state = "movecooldown"
-                self.pastaniframes = self.aniframes
-            else:
-                self.updatepush(pushables, robots, 0, -1)
-                self.coordsy -= 1 / 15
-        if self.state == "movingdown":
-            if self.aniframes - self.pastaniframes > 15:
-                self.state = "movecooldown"
-                self.pastaniframes = self.aniframes
-            else:
-                self.updatepush(pushables, robots, 0, 1)
-                self.coordsy += 1 / 15
-        if self.state == "movingleft":
-            if self.aniframes - self.pastaniframes > 15:
-                self.state = "movecooldown"
-                self.pastaniframes = self.aniframes
-            else:
-                self.updatepush(pushables, robots, -1, 0)
-                self.coordsx -= 1 / 15
-        if self.state == "movingright":
-            if self.aniframes - self.pastaniframes > 15:
-                self.state = "movecooldown"
-                self.pastaniframes = self.aniframes
-            else:
-                self.updatepush(pushables, robots, 1, 0)
-                self.coordsx += 1 / 15
-        if self.state == "movecooldown":
-            self.facing = None
-            self.coordsx = round(self.coordsx)
-            self.coordsy = round(self.coordsy)
-            self.gridx = self.coordsx
-            self.gridy = self.coordsy
-            if self.aniframes - self.pastaniframes >= 2:
-                self.state = "idle"
-        self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
-
 
    def update(self, screen, walls, pushables, doors, robots, gates, levelunlocks):
        self.updatepos(walls, pushables, doors, robots, gates, levelunlocks)
