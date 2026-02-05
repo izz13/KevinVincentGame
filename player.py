@@ -610,10 +610,7 @@ class ProgramHeader:
         self.aniframes += 1
         self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
 
-        # TEMPORARY
-        if self.state == "idle":
-            self.state = "activated"
-            self.totaltimes = 1
+
 
         if self.state == "idle":
             for pushable in pushables:
