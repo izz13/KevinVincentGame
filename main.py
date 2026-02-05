@@ -26,8 +26,6 @@ def checkcrush(object, doors):
    return False
 
 
-
-
 def generatelevel(index):
    currentlevel = level.levels[index][0]
    tilesy = len(currentlevel)
@@ -252,11 +250,11 @@ for i in range(FIRSTLEVELNUM):
 gridstatetracker = 0
 
 
-startbutton = Button(375, 375, 567, 67, 0.5, 0.95, "Button.png", "placeholder", "Start Game")
-charactercustombutton = Button(375, 450, 567, 67, 0.5, 0.95, "Button.png", "placeholder", "Character Select")
-cutscenebutton = Button(WIDTH//2,HEIGTH//2 , WIDTH, HEIGTH, 0.5, 0.95, "Button.png", "placeholder", "Next Cutscene")
-levelselectbutton = Button(WIDTH // 2, HEIGTH // 2 + 75, 300, 50, 0.5, 0.95, "Button.png", "placeholder", "Level Select")
-exitbutton = Button(WIDTH // 2, HEIGTH // 2 + 150, 100, 50, 0.5, 0.95, "Button.png", "placeholder", "Exit")
+startbutton = Button(375, 375, 567, 67, "Start Game")
+charactercustombutton = Button(375, 450, 567, 67, "Character Select")
+cutscenebutton = Button(WIDTH//2,HEIGTH//2 , WIDTH, HEIGTH,"Next Cutscene")
+levelselectbutton = Button(WIDTH // 2, HEIGTH // 2 + 75, 300, 50,  "Level Select")
+exitbutton = Button(WIDTH // 2, HEIGTH // 2 + 150, 100, 50, "Exit")
 
 
 
@@ -266,8 +264,8 @@ boyimg = pygame.image.load("boy.png")
 csimg = pygame.image.load("cs.png")
 girlimg = pygame.image.load("girl.png")
 csimg = pygame.transform.scale(csimg, [WIDTH, HEIGTH])
-leftbutton = Button(WIDTH/2, HEIGTH*0.75, 100, 50, 0.5, 0.95, "Button.png", "placeholder", "<--")
-rightbutton = Button(WIDTH/1.5, HEIGTH*0.75, 100, 50, 0.5, 0.95, "Button.png", "placeholder", "-->")
+leftbutton = Button(WIDTH/2, HEIGTH*0.75, 100, 50, "<--")
+rightbutton = Button(WIDTH/1.5, HEIGTH*0.75, 100, 50, "-->")
 pastgamestate = "startmenu"
 brightsurface = pygame.surface.Surface([WIDTH, HEIGTH], pygame.SRCALPHA)
 winimg = pygame.image.load("wintext.png")
@@ -383,7 +381,8 @@ while isrunning:
                else:
                    player.render(screen)
                if checkcrush(player, doors):
-                   player = None
+                   player.coordsx = -20
+                   player.coordsy = -67
 
 
            if gates != []:
@@ -608,7 +607,7 @@ while isrunning:
        text(WIDTH / 2, 50, 250, 75, "Settings", [255, 255, 255], screen)
        text(382, 257, 125, 35, "Brightness", [255, 255, 255], screen)
        brightslider.update(screen)
-       controlButton = Button(WIDTH // 2, HEIGTH // 2, 200, 50, 0.5, 0.95, "Button.png", "placeholder", ["arrow", "wasd"][int(controls)])
+       controlButton = Button(WIDTH // 2, HEIGTH // 2, 200, 50, ["arrow", "wasd"][int(controls)])
        controlButton.update(screen)
        exitbutton.update(screen)
        levelselectbutton.update(screen)
@@ -664,10 +663,4 @@ while isrunning:
 
 
 
-
-
-
-
-
 pygame.quit()
-

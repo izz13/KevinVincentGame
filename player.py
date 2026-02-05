@@ -70,7 +70,6 @@ class Player:
        self.frontImage.set_colorkey([0, 0, 0])
        self.backImage.set_colorkey([0, 0, 0])
        self.sideImage.set_colorkey([0, 0, 0])
-       self.reverseSideImage.set_colorkey([0, 0, 0])
 
    def render(self, screen):
        self.updateimage()
@@ -381,15 +380,17 @@ class Door:
         self.tilesy = tilesy
         self.image = image
         self.frame = frame
-        if self.frame == 0:
-            self.type = "plate"
+        if frame == 0:
+            self.state = "sensor"
         else:
-            self.type = "door"
+            self.state = "door"
         self.color = color
         self.pixelarray = PixelArray(pygame.image.load(self.image))
         self.pixelarray.replace((255, 255, 255), tuple(color))
         self.spritesheet = SpriteSheet(self.pixelarray.make_surface(), False)
         self.rect = pygame.rect.Rect(coordsx * WIDTH / tilesx, coordsy * HEIGTH / tilesy, w, h)
+        self.activate = False
+        self.open = False
 
     def render(self, screen):
         screen.blit(self.spritesheet.get_sprite(self.frame, 32, 32, self.w, self.h), self.rect)
@@ -399,18 +400,23 @@ class Door:
         self.updatestate(pushables, players, doors, robots)
 
     def updatestate(self, pushables, players, doors, robots):
-        if self.frame == 0:
-            self.activate = False
+        self.activate = False
+        self.open = False
+        if self.state == "sensor":
             if players != None:
                 for interactable in pushables + [players] + robots:
-                    if interactable.coordsx == self.coordsx and interactable.coordsy == self.coordsy:
+                    if self.rect.colliderect(interactable.rect):
                         self.activate = True
+        if self.state == "door":
+            self.open = False
             for door in doors:
-                if door.frame != 0 and door.color == self.color:
-                    if self.activate:
-                        door.frame = 2
-                    else:
-                        door.frame = 1
+                if door.state == "sensor" and door.color == self.color:
+                    if door.activate:
+                        self.open = True
+            if self.open:
+                self.frame = 2
+            else:
+                self.frame = 1
 class Robot:
         def __init__(self, coordsx, coordsy, w, h, tilesx, tilesy, image, color):
             self.coordsx = coordsx
@@ -605,7 +611,7 @@ class ProgramHeader:
         self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
 
         # TEMPORARY
-        if self.state == "idle" and pygame.key.get_pressed()[pygame.K_f]:
+        if self.state == "idle":
             self.state = "activated"
             self.totaltimes = 1
 
@@ -670,7 +676,7 @@ class ProgramHeader:
                                 pushableydir = 0
                             self.findblock(pushable2.coordsx, pushable2.coordsy, pushablexdir, pushableydir, pushables, depth + 1)
             #Failsafe
-            if self.totaltimes >= 300:
+            if self.totaltimes >= 600:
                 self.state = "idle"
     def updaterobots(self, pushables, robots):
         self.currenttimes = 1
