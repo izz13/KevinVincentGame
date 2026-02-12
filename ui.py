@@ -1,7 +1,5 @@
 import pygame
 pygame.init()
-from pygame import mixer
-
 
 def text(centerx, centery, w, h, txt, color, screen):
     font = pygame.font.Font("pixelfont.ttf")

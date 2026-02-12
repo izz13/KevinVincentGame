@@ -1,6 +1,6 @@
 import pygame
 from grid import Grid
-from player import Player, Flag, Wall, Pushable, Door, Robot, ProgramHeader, Gate, Function, LevelBlock, LevelChange, LevelUnlock
+from player import Player, Flag, Wall, Pushable, Door, Robot, ProgramHeader, Gate, Function, LevelBlock, LevelChange, LevelUnlock, Laser
 import level
 from ui import Button, text, Slider
 from particle import Particle
@@ -114,12 +114,16 @@ def generatelevel(index):
                    levelchanges.append(LevelChange(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "levelchange.png", {"up":90, "down":-90, "right":0, "left":180}[currenttile[1]], currenttile[2]))
                if currenttile[0] == "levelunlock":
                    levelunlocks.append(LevelUnlock(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "levelunlock.png", currenttile[1], currenttile[2], currenttile[3]))
-
-
-
-
-
-
+               if currenttile[0] == "laser":
+                    if currenttile[1] == "up":
+                        dir = 90
+                    elif currenttile[1] == "down":
+                        dir = -90
+                    elif currenttile[1] == "left":
+                        dir = 180
+                    elif currenttile[1] == "right":
+                        dir = 0
+                    pushables.append(Laser(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "laser.png", dir))
    return [tilesx, tilesy, grid, player, flag, walls, pushables, doors, robots, gates, levelblocks, levelchanges, levelunlocks]
 
 
@@ -164,6 +168,8 @@ def anim(newlevelnum, screen):
                            pushables.append(ProgramHeader(pushattr[0], pushattr[1], pushattr[2], pushattr[3], pushattr[4], pushattr[5], pushattr[6], pushattr[7], pushattr[8], pushattr[9], pushattr[10]))
                        elif pushattr[-1] == "Function":
                            pushables.append(Function(pushattr[0], pushattr[1], pushattr[2], pushattr[3], pushattr[4], pushattr[5], pushattr[6], pushattr[7], pushattr[8], pushattr[9], pushattr[10], pushattr[11]))
+                       elif pushattr[-1] == "Laser":
+                           pushables.append(Laser(pushattr[0], pushattr[1], pushattr[2], pushattr[3], pushattr[4], pushattr[5], pushattr[6], pushattr[7]))
 
 
                    undorobotattr = undoframe["robots"]
@@ -303,7 +309,6 @@ while isrunning:
                cutsceneframe += 1
        else:
            gamestate = "game"
-   #Player(self.coordsx, self.coordsy, self.w, self.h, self.tilesx, self.tilesy, None)
    elif gamestate == "game":
            screen.fill([100, 100, 100])
            grid.render(screen)
@@ -328,19 +333,22 @@ while isrunning:
                    wall.render(screen, walls)
            if pushables != []:
                for pushable in pushables:
-                   if str(type(pushable)) == "<class 'player.ProgramHeader'>":
+                   if isinstance(pushable, ProgramHeader):
                        pushable.update(screen, pushables, robots)
+                   elif isinstance(pushable, Laser):
+                       pushable.update(screen, walls, pushables, player, robots)
                    else:
-                        pushable.update(screen)
+                       pushable.update(screen)
                    if checkcrush(pushable, doors):
                        pushables.remove(pushable)
                for pushable in pushables:
-                   if pushable.frame == 4:
-                       if pushable.flashlist != []:
-                           for flash in pushable.flashlist:
-                               flash.update(screen)
-                               if flash.aniframes > 15:
-                                   pushable.flashlist.remove(flash)
+                   if not isinstance(pushable, Laser):
+                       if pushable.frame == 4:
+                           if pushable.flashlist != []:
+                               for flash in pushable.flashlist:
+                                   flash.update(screen)
+                                   if flash.aniframes > 15:
+                                       pushable.flashlist.remove(flash)
            if robots != []:
                for robot in robots:
                    robot.update(screen, walls, pushables, doors, player, robots, gates, levelunlocks)
@@ -439,6 +447,8 @@ while isrunning:
                                pushables.append(ProgramHeader(pushattr[0], pushattr[1], pushattr[2], pushattr[3], pushattr[4], pushattr[5], pushattr[6], pushattr[7], pushattr[8], pushattr[9], pushattr[10]))
                            elif pushattr[-1] == "Function":
                                pushables.append(Function(pushattr[0], pushattr[1], pushattr[2], pushattr[3], pushattr[4], pushattr[5], pushattr[6], pushattr[7], pushattr[8], pushattr[9], pushattr[10], pushattr[11]))
+                           elif pushattr[-1] == "Laser":
+                               pushables.append(Laser(pushattr[0], pushattr[1], pushattr[2], pushattr[3], pushattr[4], pushattr[5], pushattr[6], pushattr[7]))
 
 
                        undorobotattr = undoframe["robots"]
@@ -513,6 +523,8 @@ while isrunning:
                        pastpushables.append([pushable.coordsx, pushable.coordsy, pushable.w, pushable.h, pushable.tilesx, pushable.tilesy, pushable.ogspritesheet, pushable.frame, pushable.frame2, pushable.dir, pushable.color, "ProgramHeader"])
                    elif isinstance(pushable, Function):
                        pastpushables.append([pushable.coordsx, pushable.coordsy, pushable.w, pushable.h, pushable.tilesx, pushable.tilesy, pushable.ogimage, pushable.frame, pushable.frame2, pushable.frame3, pushable.command, pushable.dir, "Function"])
+                   elif isinstance(pushable, Laser):
+                       pastpushables.append([pushable.coordsx, pushable.coordsy, pushable.w, pushable.h, pushable.tilesx, pushable.tilesy, pushable.image, pushable.direction, "Laser"])
                     
 
                pastdoors = []

@@ -4,7 +4,6 @@ import math
 from pygame import PixelArray
 from ui import text
 
-
 pygame.init()
 
 FIRSTLEVELNUM = 3
@@ -42,25 +41,7 @@ class Player:
        self.currentimage = self.frontImage
        self.controls = 0
        self.keys = [[pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT], [pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d]]
-   '''
-   def setimgs(self, direction="None"):
-       if direction == "left":
-           if self.sheetindex > 0:
-               self.sheetindex -= 1
-           else:
-               self.sheetindex = 0
-       elif direction == "right":
-           if self.sheetindex < len(self.sheets) -1:
-               self.sheetindex += 1
-           else:
-               self.sheetindex = len(self.sheets) -1
-       self.spritesheet = self.sheets[self.sheetindex]
-       self.backImage = self.spritesheet.get_sprite(0, 64, 64, self.w, self.h)
-       self.frontImage = self.spritesheet.get_sprite(1, 64, 64, self.w, self.h)
-       self.sideImage = self.spritesheet.get_sprite(2, 64, 64, self.w, self.h)
-       self.reverseSideImage = self.spritesheet.get_sprite(3, 64, 64, self.w, self.h)
-       self.images = {"movingup" : self.backImage, "movingdown" : self.frontImage, "movingleft" : self.reverseSideImage, "movingright" : self.sideImage}
-       '''
+
    def updateimage(self):
        self.spritesheet = SpriteSheet(self.image)
        self.frontImage = self.spritesheet.get_sprite(1, 64, 64, self.w, self.h)
@@ -494,14 +475,14 @@ class Robot:
         def updatepush(self, pushables, robots, xvel, yvel):  # This took way to long 😭
             if pushables != []:
                 for pushable in pushables:
-                    if math.dist([self.coordsx + xvel, self.coordsy + yvel], [pushable.coordsx, pushable.coordsy]) <= 0.00000001:
+                    if math.dist([self.coordsx + xvel, self.coordsy + yvel], [pushable.coordsx, pushable.coordsy]) <= 0.5:
                         pushable.move(xvel / 15, yvel / 15)
                         if self.aniframes - self.pastaniframes == 15:
                             pushable.coordsx = round(pushable.coordsx)
                             pushable.coordsy = round(pushable.coordsy)
             if robots != []:
                 for robot in robots:
-                    if math.dist([self.coordsx + xvel, self.coordsy + yvel], [robot.coordsx, robot.coordsy]) <= 0.00000001:
+                    if math.dist([self.coordsx + xvel, self.coordsy + yvel], [robot.coordsx, robot.coordsy]) <= 0.5:
                         robot.coordsx += xvel / 15
                         robot.coordsy += yvel / 15
                     if self.aniframes - self.pastaniframes == 15:
@@ -641,12 +622,13 @@ class ProgramHeader:
         while self.currenttimes <= self.totaltimes:
             self.robotcommand = None
             for pushable in pushables:
-                if pushable.coordsx == x + xdir * startval and pushable.coordsy == y + ydir * startval and pushable.command != None:
-                    self.robotcommand = pushable.command
-                    self.pushablecoordsx = pushable.coordsx
-                    self.pushablecoordsy = pushable.coordsy
-                    if self.robotcommand == "function":
-                        frame3 = pushable.frame3
+                if not isinstance(pushable, Laser):
+                    if pushable.coordsx == x + xdir * startval and pushable.coordsy == y + ydir * startval and pushable.command != None:
+                        self.robotcommand = pushable.command
+                        self.pushablecoordsx = pushable.coordsx
+                        self.pushablecoordsy = pushable.coordsy
+                        if self.robotcommand == "function":
+                            frame3 = pushable.frame3
             if self.robotcommand == None:
                 if depth == 1:
                     self.state = "idle"
@@ -657,21 +639,22 @@ class ProgramHeader:
                     startval += 1
             if self.robotcommand == "function":
                 for pushable2 in pushables:
-                    if pushable2.frame == 11:
-                        if pushable2.frame3 == frame3:
-                            if pushable2.dir == 0:
-                                pushablexdir = 1
-                                pushableydir = 0
-                            if pushable2.dir == 90:
-                                pushablexdir = 0
-                                pushableydir = -1
-                            if pushable2.dir == -90:
-                                pushablexdir = 0
-                                pushableydir = 1
-                            if pushable2.dir == 180:
-                                pushablexdir = -1
-                                pushableydir = 0
-                            self.findblock(pushable2.coordsx, pushable2.coordsy, pushablexdir, pushableydir, pushables, depth + 1)
+                    if not isinstance(pushable2, Laser):
+                        if pushable2.frame == 11:
+                            if pushable2.frame3 == frame3:
+                                if pushable2.dir == 0:
+                                    pushablexdir = 1
+                                    pushableydir = 0
+                                if pushable2.dir == 90:
+                                    pushablexdir = 0
+                                    pushableydir = -1
+                                if pushable2.dir == -90:
+                                    pushablexdir = 0
+                                    pushableydir = 1
+                                if pushable2.dir == 180:
+                                    pushablexdir = -1
+                                    pushableydir = 0
+                                self.findblock(pushable2.coordsx, pushable2.coordsy, pushablexdir, pushableydir, pushables, depth + 1)
             #Failsafe
             if self.totaltimes >= 600:
                 self.state = "idle"
@@ -935,3 +918,62 @@ class LevelUnlock:
     def update(self, screen, completedlevels, isanim = True):
         self.updatenumber(completedlevels, isanim)
         self.render(screen)
+
+
+class Laser:
+    def __init__(self, coordsx, coordsy, w, h, tilesx, tilesy, image, direction):
+        self.coordsx = coordsx
+        self.coordsy = coordsy
+        self.w = w
+        self.h = h
+        self.tilesx = tilesx
+        self.tilesy = tilesy
+        self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
+        self.image = image
+        self.spritesheet = SpriteSheet(self.image)
+        self.shooter = self.spritesheet.get_sprite(0, 32, 32, self.w, self.h)
+        self.direction = direction
+        self.shooter = pygame.transform.rotate(self.shooter, self.direction + 180)
+        self.shooter.set_colorkey([0,0,0])
+        self.beam = self.spritesheet.get_sprite(1, 32, 32, self.w, self.h)
+        self.beam = pygame.transform.rotate(self.beam, direction)
+        self.beam.set_colorkey([0,0,0])
+        self.dx = math.cos(math.radians(self.direction)) * self.w
+        self.dy = -math.sin(math.radians(self.direction)) * self.h
+        self.aniframes = 0
+
+    def render(self, screen, walls, pushables, player, robots):
+        screen.blit(self.shooter, self.rect)
+        blockables = walls + pushables
+        self.checkrect = self.rect.copy()
+        ischecking = True
+        while ischecking:
+            self.checkrect.centerx += self.dx
+            self.checkrect.centery += self.dy
+            self.destroy(player, robots)
+            if self.checkrect.x > WIDTH or self.checkrect.x < 0 or self.checkrect.y > HEIGTH or self.checkrect.y < 0:
+                ischecking = False
+            else:
+                for blockable in blockables:
+                    if self.checkrect.colliderect(blockable.rect):
+                        ischecking = False
+            if ischecking:
+                screen.blit(self.beam, self.checkrect)
+    def destroy(self, player, robots):
+        self.destroyrect = pygame.rect.Rect(0, 0, self.w * 0.5, self.h * 0.5)
+        self.destroyrect.center = self.checkrect.center
+        if player != None:
+            if self.destroyrect.colliderect(player.rect):
+                player.coordsx = -20
+                player.coordsy = -67
+        for robot in robots:
+            if self.destroyrect.colliderect(robot.rect):
+                robots.remove(robot)
+
+    def move(self, xvel, yvel):
+        self.coordsx += xvel
+        self.coordsy += yvel
+
+    def update(self, screen, walls, pushables, player, robots):
+        self.render(screen, walls, pushables, player, robots)
+        self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)

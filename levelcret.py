@@ -2,11 +2,9 @@ import math
 
 import pygame
 from grid import Grid
-from player import Player, Flag, Wall, Pushable, Door, Robot, ProgramHeader, Gate, Function, LevelBlock, LevelChange, LevelUnlock
+from player import Player, Flag, Wall, Pushable, Door, Robot, ProgramHeader, Gate, Function, LevelBlock, LevelChange, LevelUnlock, Laser
 from ui import Button, TypeField, text
 import pyperclip
-
-
 
 pygame.init()
 
@@ -115,6 +113,16 @@ def generatelevel():
                     levelchanges.append(LevelChange(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "levelchange.png", {"up":90, "down":-90, "right":0, "left":180}[currenttile[1]], currenttile[2]))
                 if currenttile[0] == "levelunlock":
                     levelunlocks.append(LevelUnlock(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "levelunlock.png", currenttile[1], currenttile[2], currenttile[3]))
+                if currenttile[0] == "laser":
+                    if currenttile[1] == "up":
+                        dir = 90
+                    elif currenttile[1] == "down":
+                        dir = -90
+                    elif currenttile[1] == "left":
+                        dir = 180
+                    elif currenttile[1] == "right":
+                        dir = 0
+                    pushables.append(Laser(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "laser.png", dir))
 
 
     return [tilesx, tilesy, grid, player, flag, walls, pushables, doors, robots, gates, levelblocks, levelchanges, levelunlocks]
@@ -172,6 +180,7 @@ portbutton = Button(850 + 125 * 2, 75 + 125 * 5, 100, 100, "port")
 levelblockbutton = Button(850 + 125 * 3, 75, 100, 100, "lblock")
 levelchangebutton = Button(850 + 125 * 3, 75 + 125, 100, 100, "lchange")
 levelunlockbutton = Button(850 + 125 * 3, 75 + 125 * 2, 100, 100, "unlock")
+laserbutton = Button(850 + 125 * 3, 75 + 125 * 3, 100, 100, "laser")
 
 rtypefield = TypeField(850 + 125 * 3 + 130, 75, 150, 75, 0.9, 0.9, "textfield.png", "R:", 3, [255, 0, 0])
 gtypefield = TypeField(850 + 125 * 3 + 130, 75 + 125, 150, 75, 0.9, 0.9, "textfield.png", "G:", 3, [0, 255, 0])
@@ -237,6 +246,7 @@ while isrunning:
         levelblockbutton.update(screen)
         levelchangebutton.update(screen)
         levelunlockbutton.update(screen)
+        laserbutton.update(screen)
 
         text(1300, 725, 80, 20, str(tilesx) + " by " + str(tilesy), [255, 255, 255], screen)
 
@@ -289,6 +299,8 @@ while isrunning:
             mousemode = "levelchange"
         if levelunlockbutton.checkcollisions():
             mousemode = "levelunlock"
+        if laserbutton.checkcollisions():
+            mousemode = "laser"
 
         if mousemode == "pblock":
             index = index % 5
@@ -373,6 +385,12 @@ while isrunning:
             minimumtypefield.update(screen)
             maximumtypefield.update(screen)
             totaltypefield.update(screen)
+        if mousemode == "laser":
+            index = index % 4
+            dirbutton = Button(850 + 125 * 3 + 130, 75 + 125 * 3, 150, 75, ["up", "down", "left", "right", "swap"][index])
+            if dirbutton.checkcollisions():
+                index = index + 1
+            dirbutton.update(screen)
 
         if True:
             squarew = 750 / tilesx
@@ -487,6 +505,8 @@ while isrunning:
                 if mousemode == "levelunlock":
                     if minimumtypefield.textstr != "" and maximumtypefield.textstr != "" and totaltypefield.textstr != "":
                         testlevel[squarecoords[1]][squarecoords[0]] = ["levelunlock", int(minimumtypefield.textstr), int(maximumtypefield.textstr), int(totaltypefield.textstr)]
+                if mousemode == "laser":
+                    testlevel[squarecoords[1]][squarecoords[0]] = ["laser", ["up", "down", "left", "right"][index]]
 
 
     if doors != []:
@@ -500,19 +520,22 @@ while isrunning:
             wall.render(screen, walls)
     if pushables != []:
         for pushable in pushables:
-            if str(type(pushable)) == "<class 'player.ProgramHeader'>":
+            if isinstance(pushable, ProgramHeader):
                 pushable.update(screen, pushables, robots)
+            elif isinstance(pushable, Laser):
+                pushable.update(screen, walls, pushables, player, robots)
             else:
                 pushable.update(screen)
             if checkcrush(pushable, doors):
                 pushables.remove(pushable)
         for pushable in pushables:
-            if pushable.frame == 4:
-                if pushable.flashlist != []:
-                    for flash in pushable.flashlist:
-                        flash.update(screen)
-                        if flash.aniframes > 15:
-                            pushable.flashlist.remove(flash)
+            if not isinstance(pushable, Laser):
+                if pushable.frame == 4:
+                    if pushable.flashlist != []:
+                        for flash in pushable.flashlist:
+                            flash.update(screen)
+                            if flash.aniframes > 15:
+                                pushable.flashlist.remove(flash)
     if robots != []:
         for robot in robots:
             robot.update(screen, walls, pushables, doors, player, robots, gates, levelunlocks)
