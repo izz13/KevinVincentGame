@@ -286,10 +286,35 @@ for filename in ["Cut1.png", "Cut2.png", "Cut3.png"]:
    cutsceneimages.append(image)
 
 
+def stopall():
+    mainmusic.stop()
+    cutmusic.stop()
+    csmusic.stop()
+    gamemusic.stop()
+
 cutsceneframe = 0
 
+isplayed = False
+mainmusic = pygame.mixer.Sound("light_puzzles_13.ogg")
+cutmusic = pygame.mixer.Sound("caravan.ogg.ogg")
+csmusic = pygame.mixer.Sound("piano-03.mp3")
+gamemusic = pygame.mixer.Sound("electronic_escape.mp3")
+pastmusicgamestate = None
 
 while isrunning:
+   if pastmusicgamestate != gamestate:
+       pastmusicgamestate = gamestate
+       stopall()
+       if pastmusicgamestate == "startmenu":
+           mainmusic.play(-1)
+       elif pastmusicgamestate == "cutscene":
+           cutmusic.play(-1)
+       elif pastmusicgamestate == "cs":
+           csmusic.play(-1)
+       elif pastmusicgamestate == "game":
+           gamemusic.play(-1)
+
+
    pygame.display.set_icon(pygame.image.load("Player.png"))
    if gamestate == "startmenu":
        screen.fill([150, 150, 150])
@@ -340,6 +365,7 @@ while isrunning:
                    else:
                        pushable.update(screen)
                    if checkcrush(pushable, doors):
+                       pygame.mixer.Sound("explosion.wav").play()
                        pushables.remove(pushable)
                for pushable in pushables:
                    if not isinstance(pushable, Laser):
@@ -353,6 +379,7 @@ while isrunning:
                for robot in robots:
                    robot.update(screen, walls, pushables, doors, player, robots, gates, levelunlocks)
                    if checkcrush(robot, doors):
+                       pygame.mixer.Sound("explosion.wav").play()
                        robots.remove(robot)
            for pushable in pushables:
                if str(type(pushable)) == "<class 'player.ProgramHeader'>":
@@ -389,6 +416,7 @@ while isrunning:
                else:
                    player.render(screen)
                if checkcrush(player, doors):
+                   pygame.mixer.Sound("explosion.wav").play()
                    player.coordsx = -20
                    player.coordsy = -67
 
@@ -571,7 +599,7 @@ while isrunning:
                            for n in range(10):
                                 particles.append(Particle(particlex, particley, 5, 5, random.randint(0, 360), 0.9,
                                                  random.randint(5, 20)))
-                       #pygame.mixer.Sound("Winsound.wav").play()
+                       pygame.mixer.Sound("Winsound.wav").play()
 
 
            if pygame.key.get_just_pressed()[pygame.K_e] and not isanim and levelnumber >= FIRSTLEVELNUM:
@@ -634,6 +662,7 @@ while isrunning:
            gamestate = pastgamestate
        if exitbutton.checkcollisions():
            gamestate = "startmenu"
+           mainmusic.play(-1)
        if pygame.key.get_just_pressed()[pygame.K_ESCAPE]:
            gamestate = pastgamestate
 

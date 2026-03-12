@@ -475,14 +475,14 @@ class Robot:
         def updatepush(self, pushables, robots, xvel, yvel):  # This took way to long 😭
             if pushables != []:
                 for pushable in pushables:
-                    if math.dist([self.coordsx + xvel, self.coordsy + yvel], [pushable.coordsx, pushable.coordsy]) <= 0.5:
+                    if math.dist([self.coordsx + xvel, self.coordsy + yvel], [pushable.coordsx, pushable.coordsy]) <= 0.005:
                         pushable.move(xvel / 15, yvel / 15)
                         if self.aniframes - self.pastaniframes == 15:
                             pushable.coordsx = round(pushable.coordsx)
                             pushable.coordsy = round(pushable.coordsy)
             if robots != []:
                 for robot in robots:
-                    if math.dist([self.coordsx + xvel, self.coordsy + yvel], [robot.coordsx, robot.coordsy]) <= 0.5:
+                    if math.dist([self.coordsx + xvel, self.coordsy + yvel], [robot.coordsx, robot.coordsy]) <= 0.005:
                         robot.coordsx += xvel / 15
                         robot.coordsy += yvel / 15
                     if self.aniframes - self.pastaniframes == 15:
@@ -715,6 +715,7 @@ class Gate:
 
 class Flash:
     def __init__(self, coordsx, coordsy, w, h, tilesx, tilesy, color):
+        pygame.mixer.Sound("robotmove.wav").play()
         self.coordsx = coordsx
         self.coordsy = coordsy
         self.w = w
@@ -912,6 +913,8 @@ class LevelUnlock:
             if self.minlevel <= level - FIRSTLEVELNUM + 1 <= self.maxlevel:
                 self.currentlevels += 1
         if self.currentlevels >= self.totallevels and not isanim:
+            if self.aniframes == 0:
+                pygame.mixer.Sound("explosion.wav").play()
             self.aniframes += 1
 
 
