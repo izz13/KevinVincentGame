@@ -5,6 +5,7 @@ pygame.init()
 #PROJECTILE
 class Fast:
     shopimage = "speed.png"
+    maxlevel = 9
     def __init__(self, projectile, level):
         self.projectile = projectile
         self.updateinput = "[]"
@@ -12,6 +13,7 @@ class Fast:
         self.overinput = "[]"
         self.projectile.spd *= 1.5
         self.projectile.dmg -= 6.5
+        self.level = level
 
     def update(self):
         pass
@@ -27,8 +29,9 @@ class Sharptip:
         self.updateinput = "[]"
         self.underinput = "[]"
         self.overinput = "[]"
-        self.projectile.dmg += 45
+        self.projectile.dmg += 22
         self.projectile.manacost += 3
+        self.level = level
 
     def update(self):
         pass
@@ -40,18 +43,20 @@ class Sharptip:
 
 class Poisontip:
     shopimage = "poison.png"
+    maxlevel = 9
     def __init__(self, projectile, level):
         self.projectile = projectile
         self.updateinput = "[self.collidables]"
         self.underinput = "[]"
         self.overinput = "[]"
         self.projectile.manacost += 3.5
+        self.level = level
 
     def update(self, enemies):
         for enemy in enemies:
             if self.projectile.rect.colliderect(enemy.rect):
                 if not enemy in self.projectile.alreadycollide:
-                    enemy.mods.append(StatusPoison(enemy, 64))
+                    enemy.mods.append(StatusPoison(enemy, 32))
 
 
     def renderunder(self):
@@ -64,16 +69,18 @@ class Poisontip:
 #PLAYER
 class Heal:
     shopimage = "heal.png"
+    maxlevel = 9
     def __init__(self, player, level):
         self.player = player
         self.updateinput = "[self.dt]"
         self.underinput = "[]"
         self.overinput = "[]"
+        self.level = level
 
     def update(self, dt):
         if self.player.mana >= 3:
             self.player.hp += 2 * dt
-            self.player.mana -= 3 * dt
+            self.player.mana -= 6 * dt
     def renderunder(self):
         pass
     def renderover(self):
@@ -81,11 +88,13 @@ class Heal:
 
 class Antiheal:
     shopimage = "antiheal.png"
+    maxlevel = 9
     def __init__(self, player, level):
         self.player = player
         self.updateinput = "[self.dt]"
         self.underinput = "[]"
         self.overinput = "[]"
+        self.level = level
 
     def update(self, dt):
         if pygame.key.get_pressed()[pygame.K_c]:
@@ -99,6 +108,7 @@ class Antiheal:
 
 class Teleport:
     shopimage = "teleportanchor.png"
+    maxlevel = 3
     def __init__(self, player, level):
         self.player = player
         self.updateinput = "[self.dt]"
@@ -114,6 +124,7 @@ class Teleport:
         self.pos = [0, 0]
         self.rect = self.ogimage.get_rect(center = self.pos)
         self.aniframes = 0
+        self.level = level
 
     def update(self, dt):
         if pygame.key.get_just_pressed()[pygame.K_v] and self.state == "inactive" and self.cooldown <= 0 and self.player.mana >= 50:
@@ -145,11 +156,13 @@ class Teleport:
 
 class Morehealth:
     shopimage = "morehealth.png"
+    maxlevel = 9
     def __init__(self, player, level):
         self.player = player
         self.updateinput = "[]"
         self.underinput = "[]"
         self.overinput = "[]"
+        self.level = level
     def update(self):
         self.player.maxhp += 50
     def renderunder(self):
@@ -159,6 +172,7 @@ class Morehealth:
 #MANA
 class Managamble:
     shopimage = "managamble.png"
+    maxlevel = 9
     def __init__(self, player, level):
         self.player = player
         self.updateinput = "[self.dt]"
@@ -168,6 +182,7 @@ class Managamble:
         self.duration = 5
         self.state = "idle"
         self.manamultiplier = 1
+        self.level = level
 
     def update(self, dt):
         self.player.manaregenmultiplier *= self.manamultiplier
@@ -201,6 +216,7 @@ class Managamble:
 
 class Manaburst:
     shopimage = "manaburst.png"
+    maxlevel = 9
     def __init__(self, player, level):
         self.player = player
         self.updateinput = "[self.dt]"
@@ -209,6 +225,7 @@ class Manaburst:
         self.duration = 10
         self.cooldown = 0
         self.state ="inactive"
+        self.level = level
 
     def update(self, dt):
         self.cooldown -= dt
@@ -236,15 +253,33 @@ class Manaburst:
 
 class Managain:
     shopimage = "managain.png"
+    maxlevel = 9
     def __init__(self, player, level):
         self.player = player
         self.updateinput = "[self.dt]"
         self.underinput = "[]"
         self.overinput = "[]"
+        self.level = level
 
     def update(self, dt):
         self.player.mana += 3 * dt
 
+    def renderunder(self):
+        pass
+    def renderover(self):
+        pass
+
+class Moremana:
+    shopimage = "moremana.png"
+    maxlevel = 9
+    def __init__(self, player, level):
+        self.player = player
+        self.updateinput = "[]"
+        self.underinput = "[]"
+        self.overinput = "[]"
+        self.level = level
+    def update(self):
+        self.player.maxmana += 30
     def renderunder(self):
         pass
     def renderover(self):
@@ -273,19 +308,23 @@ class StatusPoison:
     def renderover(self):
         pass
 
-class Moremana:
+#ENEMY MODS
+class Enemyfast:
     shopimage = "moremana.png"
-    def __init__(self, player, level):
-        self.player = player
+    maxlevel = 9
+    def __init__(self, enemy):
+        self.enemy = enemy
         self.updateinput = "[]"
         self.underinput = "[]"
         self.overinput = "[]"
+        self.enemy.spd = 8
     def update(self):
-        self.player.maxmana += 50
+        pass
     def renderunder(self):
         pass
     def renderover(self):
         pass
+
 
 
 #UTILS
@@ -305,6 +344,6 @@ def renderover(self):
 
 projectilemods = [Fast, Sharptip, Poisontip]
 playermods = [Heal, Antiheal, Teleport, Morehealth]
-manamods = [Managamble, Manaburst, Managain]
+manamods = [Managamble, Manaburst, Managain, Moremana]
 
 #14 total mod slots

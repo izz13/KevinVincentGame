@@ -7,10 +7,11 @@ SCREENWIDTH, SCREENHEIGHT = constants.SCREENWIDTH, constants.SCREENWIDTH
 screen = pygame.display.set_mode([SCREENWIDTH,SCREENHEIGHT])
 clock = pygame.time.Clock()
 fps = 60
+
 #PLAYER
 player = classes.Player([SCREENWIDTH / 2, SCREENHEIGHT / 2])
-player.addmods([mods.Teleport, 1])
 dt = 0
+debug = True
 
 camerapos = pygame.math.Vector2(0)
 
@@ -32,15 +33,19 @@ shoprect = pygame.rect.Rect(391, 308, 112, 167)
 shoptext = ui.Text("Press SPACE to open shop", 436, 260, 10, 30, [255, 255, 255])
 shop = popup.Shop(593, 515, 400, 500)
 inventory = popup.Inventory(204, 384, 400, 500)
+forgerect = pygame.rect.Rect(-143, 43, 170, 138)
+forgetext = ui.Text("Press SPACE to open forge", -58, 3, 10, 30, [255, 255, 255])
+forge = popup.Forge(424, 384, 700, 500)
 shopopen = False
 inventoryopen = False
+forgeopen = False
 
 def drawgamebg(screen):
     screen.fill([255, 210, 210])
     screen.blit(bg, bgrect.topleft - camerapos)
 
 def updategame(dt):
-    global wavestate, enemies, totalenemies, wavetext, wavenum, shopopen, inventoryopen
+    global wavestate, enemies, totalenemies, wavetext, wavenum, shopopen, inventoryopen, forgeopen
 
     #UPDATE WAVE
     wavebutton.render(screen, camerapos)
@@ -60,15 +65,15 @@ def updategame(dt):
             shop.restockshop()
             wavestate = "nowave"
 
-
-
     #UPDATE PLAYER
     player.update(camerapos, dt, bgrect, enemies, screen)
+    if debug:
+        player.money = 9999
 
-
-    #UPDATE ENEMIES
+    #UPDATE ENEMIES 
     for enemy in enemies:
         enemy.update(player, enemies, camerapos, dt, screen)
+        #enemy.render(dt, camerapos, screen)
         if enemy.state == "dead":
             player.money += enemy.cost
             enemies.remove(enemy)
@@ -84,16 +89,26 @@ def updategame(dt):
         if pygame.key.get_just_pressed()[pygame.K_SPACE]:
             shopopen = True
     if shopopen:
-        shop.update(screen)
+        shop.update(player, inventory, screen)
         if shop.exitbutton.checkcollisions():
             shopopen = False
+
+    #UPDATE FORGE
+    if player.rect.colliderect(forgerect):
+        forgetext.render(screen, camerapos)
+        if pygame.key.get_just_pressed()[pygame.K_SPACE]:
+            forgeopen = True
+    if forgeopen:
+        forge.update(player, inventory, screen)
+
+
 
     #UPDATE INVENTORY
     inventorybutton.render(screen)
     if inventorybutton.checkcollisions() and not inventoryopen and wavestate == "nowave":
         inventoryopen = True
     if inventoryopen:
-        inventory.update(screen)
+        inventory.update(player, screen)
         if inventory.exitbutton.checkcollisions():
             inventoryopen = False
 

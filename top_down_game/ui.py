@@ -83,6 +83,6 @@ class Button:
 
     def checkcollisions(self, player=None):
         if self.isui:
-            return self.rect.collidepoint(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]) and pygame.mouse.get_pressed()[0]
+            return self.rect.collidepoint(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]) and pygame.mouse.get_just_pressed()[0]
         else:
             return self.rect.colliderect(player.rect)

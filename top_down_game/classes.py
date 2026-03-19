@@ -8,7 +8,7 @@ class Player:
     def __init__(self, pos):
         self.pos = pos
         self.direction = Vector2(0)
-        self.img = pygame.Surface([40, 40])
+        self.img = pygame.Surface([40, 80])
         self.img.fill("red")
         self.rect = self.img.get_rect(center=self.pos)
         self.speed = 275
@@ -21,8 +21,6 @@ class Player:
         self.projectiles = []
         self.pmods = []
         self.mods = []
-        self.inventory = []
-        self.loadout = []
         self.money = 0
         self.moneytext = ui.Text(f"${self.money}", 50, 107, 25, 50, [238, 255, 0])
 
@@ -32,6 +30,11 @@ class Player:
                 self.pmods.append(mod)
             else:
                 self.mods.append(mod[0](self, mod[1]))
+    def removemod(self, modifier, level):
+        for mod in self.mods:
+            if isinstance(mod, modifier) and mod.level == level:
+                self.mods.remove(mod)
+                break
 
 
 
@@ -78,7 +81,7 @@ class Player:
     def attack(self, enemies, bgrect, camerapos, dt, screen):
         if pygame.mouse.get_just_pressed()[0] or pygame.key.get_just_pressed()[pygame.K_SPACE]:
             self.shootangle = pygame.mouse.get_pos() - (self.pos - camerapos)
-            self.newprojectile = Projectile(self.pos[0], self.pos[1], 30, 20, "playerprojectile.png", self.shootangle, 300, 30, self.pmods)
+            self.newprojectile = Projectile(self.pos[0], self.pos[1], 30, 20, "playerprojectile.png", self.shootangle, 300, 60, self.pmods)
             if self.newprojectile.manacost <= self.mana:
                 self.projectiles.append(self.newprojectile)
                 self.mana -= self.newprojectile.manacost
