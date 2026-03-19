@@ -69,6 +69,8 @@ def updategame(dt):
     player.update(camerapos, dt, bgrect, enemies, screen)
     if debug:
         player.money = 9999
+    if player.hp <= 0 and not debug:
+        pygame.quit()
 
     #UPDATE ENEMIES 
     for enemy in enemies:
