@@ -22,6 +22,7 @@ class Player:
         self.pmods = []
         self.mods = []
         self.money = 0
+        self.defense = 0
         self.moneytext = ui.Text(f"${self.money}", 50, 107, 25, 50, [238, 255, 0])
 
     def addmods(self, *modifiers):
@@ -30,13 +31,18 @@ class Player:
                 self.pmods.append(mod)
             else:
                 self.mods.append(mod[0](self, mod[1]))
+
     def removemod(self, modifier, level):
         for mod in self.mods:
             if isinstance(mod, modifier) and mod.level == level:
                 self.mods.remove(mod)
                 break
-
-
+        for pmod in self.pmods:
+            if pmod == [modifier, level]:
+                self.pmods.remove(pmod)
+                break
+    def hurt(self, damage):
+        self.hp -= damage - self.defense * damage
 
     def update(self, camerapos, dt, bgrect, enemies, screen):
         self.screen = screen
@@ -130,6 +136,7 @@ class Enemy:
         self.aniframes = 0
         self.state = "idle"
         self.cost = cost
+        self.defense = 0
         self.mods = []
         for mod in mods:
             self.mods.append(mod(self))
@@ -139,7 +146,7 @@ class Enemy:
         mods.renderunder(self)
         screen.blit(self.image, self.rect.topleft - camerapos)
         mods.renderover(self)
-        self.hurt(dt, camerapos, screen)
+        self.redflash(dt, camerapos, screen)
         self.bar = ui.Bar(self.rect.centerx, self.rect.top - 15, self.rect.w + 10, 10, "hpbar.png", 5, 5)
         self.bar.center = self.bar.center - camerapos
         self.bar.render(screen, self.hp / self.MAXHP)
@@ -155,7 +162,7 @@ class Enemy:
         self.atkcooldown -= dt
         self.atkcooldown = max(0, self.atkcooldown)
         if self.atkcooldown == 0 and self.rect.colliderect(player.rect):
-            player.hp -= self.dmg
+            player.hurt(self.dmg)
             self.atkcooldown = 1 / self.atkspd
 
     def updatestate(self):
@@ -167,7 +174,7 @@ class Enemy:
             self.pastaniframes = self.aniframes
             self.state = "dying"
 
-    def hurt(self, dt, camerapos, screen):
+    def redflash(self, dt, camerapos, screen):
         if (self.aniframes - self.pastaniframes) * dt <= 0.1:
             self.hurtrender = self.hurtimage.copy()
             self.weight = (self.aniframes - self.pastaniframes) * dt / 0.1
@@ -175,6 +182,9 @@ class Enemy:
             screen.blit(self.hurtrender, self.rect.topleft - camerapos)
         else:
             self.state = "idle"
+
+    def hurt(self, damage):
+        self.hp -= damage - self.defense * damage
 
     def repel(self, enemies, player, dt):
         if math.dist(self.pos, player.pos) >= 100:
@@ -208,7 +218,7 @@ class Enemy:
             self.repel(enemies, player, dt)
             self.render(dt, camerapos, screen)
         if self.state == "hurt":
-            self.hurt(dt, camerapos, screen)
+            self.redflash(dt, camerapos, screen)
         elif self.state == "dying":
             self.dead(dt, camerapos, screen)
         self.aniframes += 1
@@ -256,7 +266,7 @@ class Projectile:
             if collidable in self.alreadycollide and not self.rect.colliderect(collidable.rect):
                 self.alreadycollide.remove(collidable)
             if self.rect.colliderect(collidable.rect) and not collidable in self.alreadycollide:
-                collidable.hp -= self.dmg
+                collidable.hurt(self.dmg)
                 self.alreadycollide.append(collidable)
 
     def fade(self):
@@ -264,6 +274,8 @@ class Projectile:
         self.image.set_alpha(pygame.math.lerp(0, 255, self.weight))
 
     def update(self, collidables, dt, camerapos, screen):
+        self.dt = dt
+        self.screen = screen
         self.updatepos(dt)
         self.collidables = collidables
         mods.updatemods(self)
@@ -273,11 +285,4 @@ class Projectile:
             self.fade()
         self.lifetime -= dt
 
-'''
-def add(a,b):
-    return a + b
 
-r = [1,2]
-
-print(add(*r))
-'''

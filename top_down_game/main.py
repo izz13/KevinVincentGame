@@ -1,4 +1,4 @@
-import pygame, constants, ui, classes, wavedata, popup, mods
+import pygame, constants, ui, classes, wavedata, popup
 
 pygame.init()
 
@@ -96,31 +96,36 @@ def updategame(dt):
             shopopen = False
 
     #UPDATE FORGE
-    if player.rect.colliderect(forgerect):
+    if player.rect.colliderect(forgerect) and wavestate == "nowave":
         forgetext.render(screen, camerapos)
         if pygame.key.get_just_pressed()[pygame.K_SPACE]:
             forgeopen = True
     if forgeopen:
         forge.update(player, inventory, screen)
+        if forge.exitbutton.checkcollisions():
+            forgeopen = False
 
 
 
     #UPDATE INVENTORY
     inventorybutton.render(screen)
-    if inventorybutton.checkcollisions() and not inventoryopen and wavestate == "nowave":
+    if inventorybutton.checkcollisions() and not inventoryopen:
         inventoryopen = True
     if inventoryopen:
         inventory.update(player, screen)
         if inventory.exitbutton.checkcollisions():
             inventoryopen = False
 
-while True:
+isrunning = True
+while isrunning:
     events = pygame.event.get()
     for event in events:
         if event.type == pygame.QUIT:
-            pygame.quit()
+            isrunning = False
     if gamestate == "game":
         drawgamebg(screen)
         updategame(dt)
     dt = clock.tick(fps)/1000
     pygame.display.update()
+
+pygame.quit()

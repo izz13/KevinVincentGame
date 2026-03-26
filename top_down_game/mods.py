@@ -3,16 +3,12 @@ pygame.init()
 
 
 #PROJECTILE
-class Fast:
-    shopimage = "speed.png"
-    maxlevel = 9
+class Lifetime:
+    shopimage = "lifetime.png"
+    maxlevel = 3
     def __init__(self, projectile, level):
         self.projectile = projectile
-        self.updateinput = "[]"
-        self.underinput = "[]"
-        self.overinput = "[]"
-        self.projectile.spd *= 1.5
-        self.projectile.dmg -= 6.5
+        self.projectile.lifetime += 0.25
         self.level = level
 
     def update(self):
@@ -26,9 +22,6 @@ class Sharptip:
     shopimage = "sharp.png"
     def __init__(self, projectile, level):
         self.projectile = projectile
-        self.updateinput = "[]"
-        self.underinput = "[]"
-        self.overinput = "[]"
         self.projectile.dmg += 22
         self.projectile.manacost += 3
         self.level = level
@@ -46,17 +39,14 @@ class Poisontip:
     maxlevel = 9
     def __init__(self, projectile, level):
         self.projectile = projectile
-        self.updateinput = "[self.collidables]"
-        self.underinput = "[]"
-        self.overinput = "[]"
         self.projectile.manacost += 3.5
         self.level = level
 
-    def update(self, enemies):
-        for enemy in enemies:
+    def update(self):
+        for enemy in self.projectile.collidables:
             if self.projectile.rect.colliderect(enemy.rect):
                 if not enemy in self.projectile.alreadycollide:
-                    enemy.mods.append(StatusPoison(enemy, 32))
+                    enemy.mods.append(StatusPoison(enemy, 52))
 
 
 
@@ -89,15 +79,12 @@ class Heal:
     maxlevel = 9
     def __init__(self, player, level):
         self.player = player
-        self.updateinput = "[self.dt]"
-        self.underinput = "[]"
-        self.overinput = "[]"
         self.level = level
 
-    def update(self, dt):
+    def update(self):
         if self.player.mana >= 3:
-            self.player.hp += 2 * dt
-            self.player.mana -= 3 * dt
+            self.player.hp += 6 * self.player.dt
+            self.player.mana -= 3 * self.player.dt
     def renderunder(self):
         pass
     def renderover(self):
@@ -108,15 +95,12 @@ class Antiheal:
     maxlevel = 9
     def __init__(self, player, level):
         self.player = player
-        self.updateinput = "[self.dt]"
-        self.underinput = "[]"
-        self.overinput = "[]"
         self.level = level
 
-    def update(self, dt):
+    def update(self):
         if pygame.key.get_pressed()[pygame.K_c]:
-            self.player.hp -= 18 * dt
-            self.player.mana += 9 * dt
+            self.player.hp -= 30 * self.player.dt
+            self.player.mana += 9 * self.player.dt
 
     def renderunder(self):
         pass
@@ -128,9 +112,6 @@ class Teleport:
     maxlevel = 3
     def __init__(self, player, level):
         self.player = player
-        self.updateinput = "[self.dt]"
-        self.underinput = "[self.dt, self.screen, self.camerapos]"
-        self.overinput = "[]"
         self.state = "inactive"
         self.cooldown = 0
         self.direction = 0
@@ -143,7 +124,7 @@ class Teleport:
         self.aniframes = 0
         self.level = level
 
-    def update(self, dt):
+    def update(self):
         if pygame.key.get_just_pressed()[pygame.K_v] and self.state == "inactive" and self.cooldown <= 0 and self.player.mana >= 50:
             self.pos = self.player.pos.copy()
             self.state = "active"
@@ -153,21 +134,21 @@ class Teleport:
                 self.player.pos = self.pos
                 self.state = "inactive"
                 self.cooldown = 10
-        self.direction += 60 * dt
+        self.direction += 60 * self.player.dt
         self.direction = self.direction % 360
         self.weight = 0.5 * math.sin(self.aniframes) + 0.5
         self.scale = pygame.math.lerp(100, 150, self.weight)
-        self.cooldown -= dt
-        self.aniframes += dt
+        self.cooldown -= self.player.dt
+        self.aniframes += self.player.dt
 
 
-    def renderunder(self, dt, screen, camerapos):
+    def renderunder(self):
         if self.state == "active":
             self.image = pygame.transform.rotate(self.ogimage, self.direction)
             self.image = pygame.transform.scale(self.image, [self.scale, self.scale])
             self.rect = self.image.get_rect(center=self.pos)
-            screen.blit(self.image, self.rect.topleft - camerapos)
-            self.player.mana -= 3 * dt
+            self.player.screen.blit(self.image, self.rect.topleft - self.player.camerapos)
+            self.player.mana -= 3 * self.player.dt
     def renderover(self):
         pass
 
@@ -176,12 +157,9 @@ class Morehealth:
     maxlevel = 9
     def __init__(self, player, level):
         self.player = player
-        self.updateinput = "[]"
-        self.underinput = "[]"
-        self.overinput = "[]"
         self.level = level
     def update(self):
-        self.player.maxhp += 50
+        self.player.maxhp += 25
     def renderunder(self):
         pass
     def renderover(self):
@@ -192,19 +170,16 @@ class Managamble:
     maxlevel = 9
     def __init__(self, player, level):
         self.player = player
-        self.updateinput = "[self.dt]"
-        self.underinput = "[]"
-        self.overinput = "[]"
         self.cooldown = 0
         self.duration = 5
         self.state = "idle"
         self.manamultiplier = 1
         self.level = level
 
-    def update(self, dt):
+    def update(self):
         self.player.manaregenmultiplier *= self.manamultiplier
         if self.state == "idle":
-            self.cooldown -= dt
+            self.cooldown -= self.player.dt
             if self.cooldown <= 0 and pygame.key.get_just_pressed()[pygame.K_z]:
                 self.state = "active"
                 self.cooldown = 8.5
@@ -218,7 +193,7 @@ class Managamble:
                 else:
                     self.manamultiplier = 1 / 2
         if self.state == "active":
-            self.duration -= dt
+            self.duration -= self.player.dt
             if self.duration <= 0:
                 self.state = "idle"
                 self.duration = 5
@@ -236,27 +211,24 @@ class Manaburst:
     maxlevel = 9
     def __init__(self, player, level):
         self.player = player
-        self.updateinput = "[self.dt]"
-        self.underinput = "[]"
-        self.overinput = "[]"
         self.duration = 10
         self.cooldown = 0
         self.state ="inactive"
         self.level = level
 
-    def update(self, dt):
-        self.cooldown -= dt
+    def update(self):
+        self.cooldown -= self.player.dt
         if pygame.key.get_just_pressed()[pygame.K_x] and self.cooldown <= 0 and self.state == "inactive":
             self.duration = 10
             self.state = "increase"
         if self.state == "increase":
-            self.player.mana += 6 * dt
-            self.duration -= dt
+            self.player.mana += 6 * self.player.dt
+            self.duration -= self.player.dt
             if self.duration <= 5:
                 self.state = "decrease"
         if self.state == "decrease":
-            self.duration -= dt
-            self.player.mana -= 6 * dt
+            self.duration -= self.player.dt
+            self.player.mana -= 6 * self.player.dt
             if self.duration <= 0:
                 self.state = "inactive"
                 self.cooldown = 15
@@ -273,13 +245,10 @@ class Managain:
     maxlevel = 9
     def __init__(self, player, level):
         self.player = player
-        self.updateinput = "[self.dt]"
-        self.underinput = "[]"
-        self.overinput = "[]"
         self.level = level
 
-    def update(self, dt):
-        self.player.mana += 3 * dt * self.player.manaregenmultiplier
+    def update(self):
+        self.player.mana += 3 * self.player.dt * self.player.manaregenmultiplier
 
     def renderunder(self):
         pass
@@ -291,12 +260,9 @@ class Moremana:
     maxlevel = 9
     def __init__(self, player, level):
         self.player = player
-        self.updateinput = "[]"
-        self.underinput = "[]"
-        self.overinput = "[]"
         self.level = level
     def update(self):
-        self.player.maxmana += 30
+        self.player.maxmana += 25
     def renderunder(self):
         pass
     def renderover(self):
@@ -309,16 +275,13 @@ class StatusPoison:
         self.dps = dps
         self.duration = 6.7
         self.total = 6.7
-        self.updateinput = "[self.dt, self.mods]"
-        self.underinput = "[]"
-        self.overinput = "[]"
 
 
-    def update(self, dt, mods):
-        self.target.hp -= self.dps / self.total * dt
-        self.duration -= dt
+    def update(self):
+        self.target.hp -= self.dps / self.total * self.target.dt
+        self.duration -= self.target.dt
         if self.duration <= 0:
-            mods.remove(self)
+            self.target.mods.remove(self)
 
     def renderunder(self):
         pass
@@ -326,40 +289,23 @@ class StatusPoison:
         pass
 
 #ENEMY MODS
-class Enemyfast:
-    shopimage = "moremana.png"
-    maxlevel = 9
-    def __init__(self, enemy):
-        self.enemy = enemy
-        self.updateinput = "[]"
-        self.underinput = "[]"
-        self.overinput = "[]"
-        self.enemy.spd = 8
-    def update(self):
-        pass
-    def renderunder(self):
-        pass
-    def renderover(self):
-        pass
+
 
 
 
 #UTILS
 def updatemods(self):
     for mod in self.mods:
-        exec("self.input = " + mod.updateinput)
-        mod.update(*self.input)
+        mod.update()
 def renderunder(self):
     for mod in self.mods:
-        exec("self.input = " + mod.underinput)
-        mod.renderunder(*self.input)
+        mod.renderunder()
 def renderover(self):
     for mod in self.mods:
-        exec("self.input = " + mod.overinput)
-        mod.renderover(*self.input)
+        mod.renderover()
 
 
-projectilemods = [Fast, Sharptip, Poisontip]
+projectilemods = [Lifetime, Sharptip, Poisontip]
 playermods = [Heal, Antiheal, Teleport, Morehealth]
 manamods = [Managamble, Manaburst, Managain, Moremana]
 

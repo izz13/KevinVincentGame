@@ -113,24 +113,18 @@ class Inventory:
 
         for item in self.items:
             for pos in self.loadoutitempos:
-                if math.dist(pos, item.rect.center) <= 30 and item.state == "not clicked" and len(self.loadout) < 14:
-                    try:
-                        self.loadout.insert(0, item)
-                        player.addmods([item.item, item.level])
-                        self.items.remove(item)
-                    except:
-                        pass
+                if math.dist(pos, item.rect.center) <= 25 and item.state == "not clicked" and len(self.loadout) < 14:
+                    self.loadout.insert(0, item)
+                    player.addmods([item.item, item.level])
+                    self.items.remove(item)
 
 
         for item in self.loadout:
             for pos in self.itempos:
-                if math.dist(pos, item.rect.center) <= 30 and item.state == "not clicked" and len(self.items) < 30:
-                    try:
-                        self.items.insert(0, item)
-                        player.removemod(item.item, item.level)
-                        self.loadout.remove(item)
-                    except:
-                        pass
+                if math.dist(pos, item.rect.center) <= 25 and item.state == "not clicked" and len(self.items) < 30:
+                    self.items.insert(0, item)
+                    player.removemod(item.item, item.level)
+                    self.loadout.remove(item)
 
 
 
@@ -176,8 +170,6 @@ class Forge:
 
     def update(self, player, inventory, screen):
         self.renderself(screen)
-        #self.rendertext(screen)
-        #self.renderitems(screen)
         self.renderbutton(screen, player, inventory)
 
 
@@ -222,6 +214,7 @@ class Item:
             self.cy = cy
         self.rect.centerx = round(pygame.math.lerp(self.rect.centerx, self.cx, 0.3))
         self.rect.centery = round(pygame.math.lerp(self.rect.centery, self.cy, 0.3))
+
 
 
 
