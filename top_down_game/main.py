@@ -11,7 +11,7 @@ fps = 60
 #PLAYER
 player = classes.Player([SCREENWIDTH / 2, SCREENHEIGHT / 2])
 dt = 0
-debug = True
+debug = False
 
 camerapos = pygame.math.Vector2(0)
 

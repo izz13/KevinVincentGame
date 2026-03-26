@@ -59,12 +59,29 @@ class Poisontip:
                     enemy.mods.append(StatusPoison(enemy, 32))
 
 
+
     def renderunder(self):
         pass
 
     def renderover(self):
         pass
 
+class GoldenArrow:
+    shopimage = "GoldenArrow.png"
+    maxlevel = 9
+    def __init___(self, projectile, level):
+        self.projectile = projectile
+        self.level = level
+        self.updateinput = "[self.dt, self.collidables, self.screen]"
+        self.underinput = "[self.dt, self.screen]"
+        self.overinput = "[]"
+        self.projectile.manacost += 1.5
+        self.anitime = 0
+        self.firesurf = pygame.surface.Surface([20, 20])
+        pygame.draw.circle(self.firesurf, [255, 100, 0], [10, 10], 10)
+
+    def update(self, dt, screen):
+        self.anitime += dt
 
 #PLAYER
 class Heal:
