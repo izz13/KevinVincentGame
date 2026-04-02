@@ -1,5 +1,6 @@
 import pygame, math, constants, ui, mods
 from pygame.math import Vector2
+from animation import Animation
 
 SCREENWIDTH, SCREENHEIGHT = constants.SCREENWIDTH, constants.SCREENWIDTH
 
@@ -24,7 +25,16 @@ class Player:
         self.money = 0
         self.defense = 0
         self.moneytext = ui.Text(f"${self.money}", 50, 107, 25, 50, [238, 255, 0])
-
+        self.backwardsWalk = Animation("characterMoves.png", [64, 64], 0, 3, 5)
+        self.forwardWalk = Animation("characterMoves.png", [64, 64], 3, 2, 5)
+        self.rightWalk = Animation("characterMoves.png", [64, 64], 5, 4, 5)
+        self.leftWalk = Animation("characterMoves.png", [64, 64], 9, 3, 5)
+        self.backIdle = Animation("characterMoves.png", [64, 64], 10, 1, 5)
+        self.leftIdle = Animation("characterMoves.png", [64, 64], 10, 1, 5)
+        self.rightIdle = Animation("characterMoves.png", [64, 64], 5, 1, 5)
+        self.idle = Animation("idleMoves.png", [64, 64], 0, 2, 5)
+        self.facing = 0
+        self.idleFacing = 0
     def addmods(self, *modifiers):
         for mod in modifiers:
             if mod[0] in mods.projectilemods:
@@ -67,13 +77,33 @@ class Player:
 
         self.rect.center = self.pos
         self.attack(enemies, bgrect, camerapos, dt, screen)
-        self.draw(camerapos, screen)
+        self.draw(camerapos, dt, screen)
 
 
 
-    def draw(self, camerapos, screen):
+    def draw(self, camerapos, dt, screen):
         mods.renderunder(self)
-        screen.blit(self.img, self.rect.topleft - camerapos)
+        if pygame.key.get_just_pressed()[pygame.K_w] or pygame.key.get_just_pressed()[pygame.K_UP]:
+            self.facing = 1
+        if pygame.key.get_just_pressed()[pygame.K_a] or pygame.key.get_just_pressed()[pygame.K_LEFT]:
+            self.facing = 2
+        if pygame.key.get_just_pressed()[pygame.K_s] or pygame.key.get_just_pressed()[pygame.K_DOWN]:
+            self.facing = 0
+        if pygame.key.get_just_pressed()[pygame.K_d] or pygame.key.get_just_pressed()[pygame.K_RIGHT]:
+            self.facing = 3
+        if pygame.key.get_just_released()[pygame.K_s] or pygame.key.get_just_released()[pygame.K_DOWN]:
+            self.facing = 4
+        if pygame.key.get_just_released()[pygame.K_w] or pygame.key.get_just_released()[pygame.K_UP]:
+            self.facing = 5
+        if pygame.key.get_just_released()[pygame.K_a] or pygame.key.get_just_released()[pygame.K_LEFT]:
+            self.facing = 6
+        if pygame.key.get_just_released()[pygame.K_d] or pygame.key.get_just_released()[pygame.K_RIGHT]:
+            self.facing = 7
+        if self.facing == 1:
+            self.backwardsWalk.playAnimation(dt)
+            screen.blit(self.backwardsWalk.playAnimation(dt), self.rect.topleft - camerapos)
+        self.idleMove = self.idle.playAnimation(self.dt)
+        #screen.blit(self.idleMove, self.rect.topleft - camerapos)
         mods.renderover(self)
         self.hpbar.render(screen, self.hp / self.maxhp)
         self.hptext = ui.Text(f"{math.ceil(self.hp)}/{self.maxhp}", 93, 22, 10, 20, [255, 255, 255])
@@ -91,6 +121,7 @@ class Player:
             if self.newprojectile.manacost <= self.mana:
                 self.projectiles.append(self.newprojectile)
                 self.mana -= self.newprojectile.manacost
+
         for projectile in self.projectiles:
             projectile.update(enemies, dt, camerapos, screen)
             if not projectile.rect.colliderect(bgrect) or projectile.lifetime <= 0:
