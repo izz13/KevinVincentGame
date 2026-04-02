@@ -45,7 +45,7 @@ def drawgamebg(screen):
     screen.blit(bg, bgrect.topleft - camerapos)
 
 def updategame(dt):
-    global wavestate, enemies, totalenemies, wavetext, wavenum, shopopen, inventoryopen, forgeopen
+    global wavestate, enemies, totalenemies, wavetext, wavenum, shopopen, inventoryopen, forgeopen, isrunning
 
     #UPDATE WAVE
     wavebutton.render(screen, camerapos)
@@ -70,7 +70,7 @@ def updategame(dt):
     if debug:
         player.money = 9999
     if player.hp <= 0 and not debug:
-        pygame.quit()
+        isrunning = False
 
     #UPDATE ENEMIES 
     for enemy in enemies:
