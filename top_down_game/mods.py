@@ -59,14 +59,14 @@ class Poisontip:
 class GoldenArrow:
     shopimage = "GoldenArrow.png"
     maxlevel = 9
-    def __init___(self, projectile, level):
+    def __init__(self, projectile, level):
         self.projectile = projectile
         self.level = level
         self.projectile.manacost += 1.5
         self.anitime = 0
         self.projectile.image = pygame.image.load("GoldenArrow.png")
         self.projectile.image.set_colorkey([0, 0, 0])
-        self.projectile.image = pygame.transform.scale(self.projectile.image, [self.w, self.h])
+        self.projectile.image = pygame.transform.scale(self.projectile.image, [self.projectile.w, self.projectile.h])
         self.projectile.image = pygame.transform.rotate(self.projectile.image, self.projectile.velocity.angle_to(pygame.Vector2(1, 0)))
         self.projectile.image.set_colorkey([0, 0, 0])
 
