@@ -100,8 +100,9 @@ def updategame(dt):
         forgetext.render(screen, camerapos)
         if pygame.key.get_just_pressed()[pygame.K_SPACE]:
             forgeopen = True
+            inventoryopen = False
     if forgeopen:
-        forge.update(player, inventory, screen)
+        forge.update(inventory, player, screen)
         if forge.exitbutton.checkcollisions():
             forgeopen = False
 
@@ -111,6 +112,7 @@ def updategame(dt):
     inventorybutton.render(screen)
     if inventorybutton.checkcollisions() and not inventoryopen:
         inventoryopen = True
+        forgeopen = False
     if inventoryopen:
         inventory.update(player, screen)
         if inventory.exitbutton.checkcollisions():

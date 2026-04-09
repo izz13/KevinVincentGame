@@ -82,9 +82,8 @@ class Heal:
         self.level = level
 
     def update(self):
-        if self.player.mana >= 3:
-            self.player.hp += 6 * self.player.dt
-            self.player.mana -= 3 * self.player.dt
+        self.player.hp += 6 * self.player.dt
+
     def renderunder(self):
         pass
     def renderover(self):

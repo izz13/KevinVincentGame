@@ -279,7 +279,6 @@ class Enemy:
 
     def update(self, player, enemies, camerapos, dt, screen):
         self.dt = dt
-        mods.updatemods(self)
         self.updatestate()
         if self.state != "dying" and self.state != "dead":
             self.attack(player, dt)
@@ -290,6 +289,7 @@ class Enemy:
             self.redflash(dt, camerapos, screen)
         elif self.state == "dying":
             self.dead(dt, camerapos, screen)
+        mods.updatemods(self)
         self.aniframes += 1
 
 

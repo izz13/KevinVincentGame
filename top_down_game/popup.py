@@ -144,33 +144,63 @@ class Forge:
         self.text = ui.Text("Shop", 593, 308, 20, 45, [173, 117, 0])
         self.exitbutton = ui.Button(96, 155, 25, 25, "exitbutton.png")
         self.itempos = []
-        self.buybuttons = []
-        for i in range(3):
-            for n in range(3):
-                self.itempos.append([474 + n * 121, 388 + i * 121])
-                self.buybuttons.append(ui.Button(474 + n * 121, 448 + i * 121, 75, 30, "buybutton.png", "Buy $10", [163, 139, 0], 65, 20))
-        self.items = []
+        for i in range(6):
+            for n in range(5):
+                self.itempos.append([113 + n * 55, 207 + i * 55])
+        self.upgradeitems = []
 
 
     def renderself(self, screen):
         pygame.draw.rect(screen, [112, 112, 112], self.outrect)
         pygame.draw.rect(screen, [148, 148, 148], self.inrect)
+        pygame.draw.circle(screen, [82, 82, 82], [554, 422], 50)
 
     def rendertext(self, screen):
         self.text.render(screen)
 
-    def renderbutton(self, screen, player, inventory):
+    def renderbutton(self, screen):
         self.exitbutton.render(screen)
 
 
 
-    def renderitems(self, screen):
-        for item in self.items:
-            item.render(screen)
+    def renderitems(self, inventory, player, screen):
+        for itempos in self.itempos:
+            self.slotsurf = pygame.surface.Surface([50, 50], pygame.SRCALPHA)
+            self.slotsurf.fill([0, 0, 0, 100])
+            self.slotrect = self.slotsurf.get_rect(center=itempos)
+            screen.blit(self.slotsurf, self.slotrect)
+        self.upgradepos = []
+        for i in range(len(self.upgradeitems)):
+            self.vector = pygame.math.Vector2(0, 25)
+            self.vector.rotate(360 * i / len(self.upgradeitems))
+            self.upgradepos.append([self.vector.x, self.vector.y])
 
-    def update(self, player, inventory, screen):
+        for itemnum in range(len(inventory.items)):
+            inventory.items[itemnum].move(self.itempos[itemnum][0], self.itempos[itemnum][1], inventory.items)
+            inventory.items[itemnum].render(screen)
+        for itemnum in range(len(self.upgradeitems)):
+            self.upgradeitems[itemnum].move(self.upgradepos[itemnum][0], self.upgradepos[itemnum][1], inventory.items)
+            self.upgradeitems[itemnum].render(screen)
+
+        for item in inventory.items:
+            if math.dist([554, 422], item.rect.center) <= 50 and item.state == "not clicked":
+                self.upgradeitems.insert(0, item)
+                player.removemod(item.item, item.level)
+                inventory.items.remove(item)
+
+        for item in self.upgradeitems:
+            for pos in self.itempos:
+                if math.dist(pos, item.rect.center) <= 25 and item.state == "not clicked" and len(inventory.items) < 30:
+                    print(pos)
+                    inventory.items.insert(0, item)
+                    player.addmods([item.item, item.level])
+                    self.upgradeitems.remove(item)
+
+
+    def update(self, inventory, player, screen):
         self.renderself(screen)
-        self.renderbutton(screen, player, inventory)
+        self.renderitems(inventory, player, screen)
+        self.renderbutton(screen)
 
 
 class Item:
