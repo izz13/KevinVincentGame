@@ -25,13 +25,13 @@ class Player:
         self.money = 0
         self.defense = 0
         self.moneytext = ui.Text(f"${self.money}", 50, 107, 25, 50, [238, 255, 0])
-        self.backwardsWalk = Animation("characterMoves.png", [64, 64], 0, 3, 5)
-        self.forwardWalk = Animation("characterMoves.png", [64, 64], 3, 2, 5)
-        self.rightWalk = Animation("characterMoves.png", [64, 64], 5, 4, 5)
-        self.leftWalk = Animation("characterMoves.png", [64, 64], 9, 3, 5)
-        self.backIdle = Animation("characterMoves.png", [64, 64], 10, 1, 5)
-        self.leftIdle = Animation("characterMoves.png", [64, 64], 10, 1, 5)
-        self.rightIdle = Animation("characterMoves.png", [64, 64], 5, 1, 5)
+        self.backwardsWalk = Animation("characterMoves.png", [64, 64], 2, 2, 5)
+        self.forwardWalk = Animation("characterMoves.png", [64, 64], 0, 2, 5)
+        self.rightWalk = Animation("characterMoves.png", [64, 64], 4, 2, 5)
+        self.leftWalk = Animation("characterMoves.png", [64, 64], 6, 2, 5)
+        self.backIdle = Animation("IdleMoves.png", [64, 64], 2, 1, 5)
+        self.leftIdle = Animation("IdleMoves.png", [64, 64], 5, 1, 5)
+        self.rightIdle = Animation("IdleMoves.png", [64, 64], 4, 1, 5)
         self.idle = Animation("idleMoves.png", [64, 64], 0, 2, 5)
         self.facing = 0
         self.idleFacing = 0
@@ -85,23 +85,61 @@ class Player:
         mods.renderunder(self)
         if pygame.key.get_just_pressed()[pygame.K_w] or pygame.key.get_just_pressed()[pygame.K_UP]:
             self.facing = 1
+
         if pygame.key.get_just_pressed()[pygame.K_a] or pygame.key.get_just_pressed()[pygame.K_LEFT]:
             self.facing = 2
+
         if pygame.key.get_just_pressed()[pygame.K_s] or pygame.key.get_just_pressed()[pygame.K_DOWN]:
             self.facing = 0
+
         if pygame.key.get_just_pressed()[pygame.K_d] or pygame.key.get_just_pressed()[pygame.K_RIGHT]:
             self.facing = 3
+
         if pygame.key.get_just_released()[pygame.K_s] or pygame.key.get_just_released()[pygame.K_DOWN]:
             self.facing = 4
+
         if pygame.key.get_just_released()[pygame.K_w] or pygame.key.get_just_released()[pygame.K_UP]:
             self.facing = 5
+
         if pygame.key.get_just_released()[pygame.K_a] or pygame.key.get_just_released()[pygame.K_LEFT]:
             self.facing = 6
+
         if pygame.key.get_just_released()[pygame.K_d] or pygame.key.get_just_released()[pygame.K_RIGHT]:
             self.facing = 7
+
+
+        if self.facing == 0:
+            self.forwardWalk.playAnimation(dt)
+            screen.blit(self.forwardWalk.playAnimation(dt), self.rect.topleft - camerapos)
+
         if self.facing == 1:
             self.backwardsWalk.playAnimation(dt)
             screen.blit(self.backwardsWalk.playAnimation(dt), self.rect.topleft - camerapos)
+
+        if self.facing == 2:
+            self.leftWalk.playAnimation(dt)
+            screen.blit(self.leftWalk.playAnimation(dt), self.rect.topleft - camerapos)
+
+        if self.facing == 3:
+            self.rightWalk.playAnimation(dt)
+            screen.blit(self.rightWalk.playAnimation(dt), self.rect.topleft - camerapos)
+
+        if self.facing == 4:
+            self.idle.playAnimation(dt)
+            screen.blit(self.idle.playAnimation(dt), self.rect.topleft - camerapos)
+
+        if self.facing == 5:
+            self.backIdle.playAnimation(dt)
+            screen.blit(self.backIdle.playAnimation(dt), self.rect.topleft - camerapos)
+        if self.facing == 6:
+            self.leftIdle.playAnimation(dt)
+            screen.blit(self.leftIdle.playAnimation(dt), self.rect.topleft - camerapos)
+
+        if self.facing == 7:
+            self.rightIdle.playAnimation(dt)
+            screen.blit(self.rightIdle.playAnimation(dt), self.rect.topleft - camerapos)
+
+
         self.idleMove = self.idle.playAnimation(self.dt)
         #screen.blit(self.idleMove, self.rect.topleft - camerapos)
         mods.renderover(self)
