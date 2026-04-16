@@ -347,6 +347,7 @@ class Projectile:
         self.screen = screen
         self.updatepos(dt)
         self.collidables = collidables
+        self.camerapos = camerapos
         mods.updatemods(self)
         self.collide(collidables)
         self.render(camerapos, screen)

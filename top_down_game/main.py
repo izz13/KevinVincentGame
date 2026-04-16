@@ -1,5 +1,4 @@
 import pygame, constants, ui, classes, wavedata, popup
-
 pygame.init()
 
 SCREENWIDTH, SCREENHEIGHT = constants.SCREENWIDTH, constants.SCREENWIDTH
@@ -64,6 +63,8 @@ def updategame(dt):
             wavenum += 1
             shop.restockshop()
             wavestate = "nowave"
+    if debug and pygame.key.get_just_pressed()[pygame.K_r]:
+        shop.restockshop()
 
     #UPDATE PLAYER
     player.update(camerapos, dt, bgrect, enemies, screen)

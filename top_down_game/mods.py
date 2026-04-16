@@ -59,23 +59,39 @@ class Poisontip:
 class GoldenArrow:
     shopimage = "GoldenArrow.png"
     maxlevel = 9
+
+
     def __init__(self, projectile, level):
         self.projectile = projectile
         self.level = level
         self.projectile.manacost += 1.5
-        self.anitime = 0
-        self.projectile.image = pygame.image.load("GoldenArrow.png")
-        self.projectile.image.set_colorkey([0, 0, 0])
+        self.projectile.image = pygame.image.load("GoldenArrowProjectile.png")
+        self.projectile.image = pygame.transform.flip(self.projectile.image, True, False)
         self.projectile.image = pygame.transform.scale(self.projectile.image, [self.projectile.w, self.projectile.h])
         self.projectile.image = pygame.transform.rotate(self.projectile.image, self.projectile.velocity.angle_to(pygame.Vector2(1, 0)))
         self.projectile.image.set_colorkey([0, 0, 0])
+        self.firetrail = []
+
 
     def update(self):
-        self.anitime += self.projectile.dt
+        self.pvel = pygame.math.Vector2(0, 0.5)
+        self.pvel.rotate_ip(random.randint(0, 359))
+        self.firetrail.append(FireProjectile(self.projectile.pos[0] + self.projectile.w / 2, self.projectile.pos[1] + self.projectile.h / 2, self.pvel))
+        for particle in self.firetrail:
+            particle.update(self.projectile.camerapos, self.projectile.screen, self.projectile.dt)
+            if particle.age >= 0.5:
+                self.firetrail.remove(particle)
+            for collidable in self.projectile.collidables:
+                if particle.rect.colliderect(collidable.rect):
+                    collidable.hurt(10 * self.projectile.dt)
+
     def renderunder(self):
         pass
     def renderover(self):
         pass
+
+
+
 #PLAYER
 class Heal:
     shopimage = "heal.png"
@@ -85,7 +101,7 @@ class Heal:
         self.level = level
 
     def update(self):
-        self.player.hp += 6 * self.player.dt
+        self.player.hp += 2.5 * self.player.dt
 
     def renderunder(self):
         pass
@@ -102,7 +118,7 @@ class Antiheal:
     def update(self):
         if pygame.key.get_pressed()[pygame.K_c]:
             self.player.hp -= 30 * self.player.dt
-            self.player.mana += 9 * self.player.dt
+            self.player.mana += 20 * self.player.dt
 
     def renderunder(self):
         pass
@@ -293,7 +309,36 @@ class StatusPoison:
 #ENEMY MODS
 
 
+#MISC
+class FireProjectile:
+    def __init__(self, x, y, vel):
+        self.x = x
+        self.y = y
+        self.vel = vel
+        self.pos = [self.x, self.y]
+        self.radius = random.randint(2, 6)
+        self.color = [255 + random.randint(-60, 0), 191 + random.randint(-60, 60), 0]
+        self.ashcolor = random.randint(50, 150)
+        self.age = 0
 
+    def render(self, camerapos, screen):
+        pygame.draw.circle(screen, self.color, self.pos - camerapos, self.radius)
+        self.rect = pygame.rect.Rect(0, 0, self.radius * 2, self.radius * 2)
+        self.rect.center = self.pos
+        self.weight = -math.log(-self.age / 0.5 + 1, 200)
+        self.color[0] = pygame.math.lerp(self.color[0], self.ashcolor, self.weight)
+        self.color[1] = pygame.math.lerp(self.color[1], self.ashcolor, self.weight)
+        self.color[2] = pygame.math.lerp(self.color[2], self.ashcolor, self.weight)
+
+
+    def move(self):
+        self.vel *= 0.99
+        self.pos += self.vel
+
+    def update(self, camerapos, screen, dt):
+        self.move()
+        self.render(camerapos, screen)
+        self.age += dt
 
 #UTILS
 def updatemods(self):
@@ -310,5 +355,3 @@ def renderover(self):
 projectilemods = [Lifetime, Sharptip, Poisontip, GoldenArrow]
 playermods = [Heal, Antiheal, Teleport, Morehealth]
 manamods = [Managamble, Manaburst, Managain, Moremana]
-
-#14 total mod slots
