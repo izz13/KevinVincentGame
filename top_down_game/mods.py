@@ -194,7 +194,6 @@ class Radiation:
         self.img.set_colorkey([0,0,0])
         self.rect = self.img.get_rect()
 
-
     def update(self):
         for enemy in self.player.enemies:
             if enemy.rect.colliderect(self.rect):
@@ -204,8 +203,6 @@ class Radiation:
         self.player.screen.blit(self.img, self.rect.topleft - self.player.camerapos)
     def renderover(self):
         pass
-
-
 
 class SecondLife:
     shopimage = "secondlifeicon.png"
