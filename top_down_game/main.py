@@ -70,7 +70,7 @@ def updategame(dt):
     player.update(camerapos, dt, bgrect, enemies, screen)
     if debug:
         player.money = 9999
-    if player.hp <= 0 and not debug:
+    if player.state == "dead":
         isrunning = False
 
     #UPDATE ENEMIES 
@@ -106,7 +106,6 @@ def updategame(dt):
         forge.update(inventory, player, screen)
         if forge.exitbutton.checkcollisions():
             forgeopen = False
-
 
 
     #UPDATE INVENTORY
