@@ -61,11 +61,13 @@ class GoldenArrow:
     maxlevel = 9
 
 
+
+
     def __init__(self, projectile, level):
         self.projectile = projectile
         self.level = level
         self.projectile.manacost += 1.5
-        self.projectile.image = pygame.image.load("GoldenArrowProjectile.png")
+        self.projectile.image = pygame.image.load("archerArrow.png")
         self.projectile.image = pygame.transform.flip(self.projectile.image, True, False)
         self.projectile.image = pygame.transform.scale(self.projectile.image, [self.projectile.w, self.projectile.h])
         self.projectile.image = pygame.transform.rotate(self.projectile.image, self.projectile.velocity.angle_to(pygame.Vector2(1, 0)))
