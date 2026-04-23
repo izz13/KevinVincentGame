@@ -376,11 +376,14 @@ class Ranged:
         self.enemy = enemy
         self.projectiles = []
         self.time = random.uniform(0, 1.75)
+        self.targetpos = pygame.math.Vector2(0, 1)
 
     def update(self):
+        self.movetime = math.dist(self.enemy.pos, self.enemy.player.pos) / 400
+        self.targetpos = self.enemy.player.pos + self.enemy.player.direction * self.enemy.player.speed
         if self.time >= 1.5:
             self.time = 0
-            self.newprojectile = classes.Projectile(self.enemy.pos[0], self.enemy.pos[1], 50, 25, "archerProjectile.png", self.enemy.player.pos - self.enemy.pos, 400, 15)
+            self.newprojectile = classes.Projectile(self.enemy.pos[0], self.enemy.pos[1], 50, 25, "archerProjectile.png", self.targetpos - self.enemy.pos, 400, 15)
             self.newprojectile.lifetime = 15
             self.projectiles.append(self.newprojectile)
         for projectile in self.projectiles:
@@ -390,7 +393,7 @@ class Ranged:
     def renderover(self):
         self.image = pygame.image.load("bow.png")
         self.image = pygame.transform.scale(self.image, [25, 25])
-        self.image = pygame.transform.rotate(self.image, (pygame.math.Vector2(self.enemy.player.pos) - pygame.math.Vector2(self.enemy.pos)).angle_to(pygame.math.Vector2(0, 1)) - 90)
+        self.image = pygame.transform.rotate(self.image, (pygame.math.Vector2(self.targetpos) - pygame.math.Vector2(self.enemy.pos)).angle_to(pygame.math.Vector2(0, 1)) - 90)
         self.image.set_colorkey([0, 0, 0])
         self.imagerect = self.image.get_rect(center=self.enemy.rect.center)
         self.enemy.screen.blit(self.image, self.imagerect.topleft - self.enemy.camerapos)
