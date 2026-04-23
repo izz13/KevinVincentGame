@@ -183,6 +183,26 @@ class Morehealth:
     def renderover(self):
         pass
 
+class Radiation:
+    shopimage = "radiationicon.png"
+    maxlevel = 9
+    def __init__(self, player, level):
+        self.player = player
+        self.level = level
+        self.img = pygame.image.load("radiationglow.png")
+        self.img = pygame.transform.scale(self.img, [200, 200])
+        self.img.set_colorkey([0,0,0])
+        self.rect = self.img.get_rect()
+
+    def update(self):
+        for enemy in self.player.enemies:
+            if enemy.rect.colliderect(self.rect):
+                enemy.hurt(25*self.player.dt)
+    def renderunder(self):
+        self.rect.center = self.player.pos
+        self.player.screen.blit(self.img, self.rect.topleft - self.player.camerapos)
+    def renderover(self):
+        pass
 
 class SecondLife:
     shopimage = "secondlifeicon.png"
@@ -395,5 +415,5 @@ def renderover(self):
 
 
 projectilemods = [Lifetime, Sharptip, Poisontip, GoldenArrow]
-playermods = [Heal, Antiheal, Teleport, Morehealth, SecondLife]
+playermods = [Heal, Antiheal, Teleport, Morehealth, Radiation, SecondLife]
 manamods = [Managamble, Manaburst, Managain, Moremana]
