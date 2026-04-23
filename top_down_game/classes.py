@@ -35,6 +35,8 @@ class Player:
         self.idle = Animation("idleMoves.png", [64, 64], 0, 2, 5)
         self.facing = 0
         self.idleFacing = 0
+        self.state = "alive"
+
     def addmods(self, *modifiers):
         for mod in modifiers:
             if mod[0] in mods.projectilemods:
@@ -72,12 +74,13 @@ class Player:
         else:
             self.hp += 1.25  * dt
         self.mana += 5 * self.manaregenmultiplier * dt
-        self.hp = pygame.math.clamp(self.hp, 0, self.maxhp)
         self.mana = pygame.math.clamp(self.mana, 0, self.maxmana)
-
         self.rect.center = self.pos
         self.attack(enemies, bgrect, camerapos, dt, screen)
+        self.hp = pygame.math.clamp(self.hp, 0, self.maxhp)
         self.draw(camerapos, dt, screen)
+        if self.hp <= 0:
+            self.state = "dead"
 
 
 

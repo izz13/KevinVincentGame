@@ -34,7 +34,7 @@ wave3 = [
     ["fast bandit", 1568, 618],
     ["fast bandit", 1360, 1306],
     ["fast bandit", 1086, 1306],
-    ["fast bandit", 40, 1306],
+    ["fast bandit", 40, 1306],40, 1306
 
 ]
 

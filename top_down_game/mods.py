@@ -170,9 +170,6 @@ class Teleport:
     def renderover(self):
         pass
 
-
-
-
 class Morehealth:
     shopimage = "morehealth.png"
     maxlevel = 9
@@ -206,6 +203,48 @@ class Radiation:
         self.rect.center = self.player.pos
         self.player.screen.blit(self.img, self.rect.topleft - self.player.camerapos)
     def renderover(self):
+        pass
+
+
+
+class SecondLife:
+    shopimage = "secondlifeicon.png"
+    maxlevel = 3
+    def __init__(self, player, level):
+        self.player = player
+        self.level = level
+        self.used = False
+        self.anitime = 0
+        self.ogimage = pygame.image.load("secondlifeparticle.png")
+
+
+    def update(self):
+        self.player.maxhp = math.ceil(self.player.maxhp * 0.75)
+        if self.player.hp <= 0 and not self.used:
+            self.used = True
+            self.player.hp = 0.5 * self.player.maxhp
+        if self.used and len(self.player.enemies) == 0:
+            self.used = False
+            self.anitime = 0
+
+    def renderover(self):
+        if self.used and self.anitime <= 1:
+            self.image = pygame.transform.scale(self.ogimage, [self.anitime * 400, self.anitime * 400])
+            self.image.set_colorkey([0, 0, 0])
+            self.image.set_alpha(255 - self.anitime * 255)
+            self.rect = self.image.get_rect(center=self.player.rect.center)
+            self.player.screen.blit(self.image, self.rect.topleft - self.player.camerapos)
+            self.anitime += self.player.dt
+            for enemy in self.player.enemies:
+                if self.rect.colliderect(enemy.rect):
+                    enemy.hurt(500 * self.player.dt)
+                    repulseforce = enemy.pos - self.player.pos
+                    repulseforce.normalize_ip()
+                    repulseforce *= 600 * self.player.dt
+                    enemy.pos += repulseforce
+
+
+    def renderunder(self):
         pass
 
 #MANA
@@ -379,5 +418,5 @@ def renderover(self):
 
 
 projectilemods = [Lifetime, Sharptip, Poisontip, GoldenArrow]
-playermods = [Heal, Antiheal, Teleport, Morehealth, Radiation]
+playermods = [Heal, Antiheal, Teleport, Morehealth, Radiation, SecondLife]
 manamods = [Managamble, Manaburst, Managain, Moremana]
