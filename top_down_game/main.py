@@ -10,7 +10,7 @@ fps = 60
 #PLAYER
 player = classes.Player([SCREENWIDTH / 2, SCREENHEIGHT / 2])
 dt = 0
-debug = True
+debug = False
 
 camerapos = pygame.math.Vector2(0)
 
@@ -70,7 +70,7 @@ def updategame(dt):
     player.update(camerapos, dt, bgrect, enemies, screen)
     if debug:
         player.money = 9999
-    if player.state == "dead":
+    if player.state == "dead" and not debug:
         isrunning = False
 
     #UPDATE ENEMIES 

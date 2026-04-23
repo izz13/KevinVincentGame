@@ -282,6 +282,9 @@ class Enemy:
 
     def update(self, player, enemies, camerapos, dt, screen):
         self.dt = dt
+        self.screen = screen
+        self.player = player
+        self.camerapos = camerapos
         self.updatestate()
         if self.state != "dying" and self.state != "dead":
             self.attack(player, dt)

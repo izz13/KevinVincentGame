@@ -35,18 +35,41 @@ wave3 = [
     ["fast bandit", 1360, 1306],
     ["fast bandit", 1086, 1306],
     ["fast bandit", 40, 1306],
-
 ]
 
+wave4 = [
+    ["archer bandit", 366, -546],
+    ["archer bandit", 366, -546],
+    ["archer bandit", 366, -546],
+    ["archer bandit", 366, -546],
+    ["archer bandit", 366, -546],
+    ["archer bandit", 366, -546],
+    ["archer bandit", 366, -546],
+    ["archer bandit", 366, -546],
+    ["archer bandit", 366, -546],
+    ["archer bandit", 366, -546],
+    ["archer bandit", 366, -546],
+    ["archer bandit", 366, -546],
+    ["archer bandit", 366, -546],
+    ["archer bandit", 366, -546],
+    ["archer bandit", 366, -546],
+    ["archer bandit", 366, -546],
+    ["archer bandit", 366, -546],
+    ["archer bandit", 366, -546],
+    ["archer bandit", 366, -546],
+    ["archer bandit", 366, -546],
+    ["archer bandit", 366, -546],
+]
 waves = [wave1, wave2, wave3]
 
-#waves = [wave3]
+waves = [wave4]
 
 for i in range(len(waves)):
     for n in range(len(waves[i])):
         waves[i][n] = {
             "bandit" : classes.Enemy(waves[i][n][1], waves[i][n][2], 60, 90, "enemy_bandit.png", hp=400, spd=150, dmg=6, atkspd=3, cost=3),
             "fast bandit": classes.Enemy(waves[i][n][1], waves[i][n][2], 60, 90, "fastbandit.png", hp=250, spd=250, dmg=4, atkspd=6, cost=4),
+            "archer bandit": classes.Enemy(waves[i][n][1], waves[i][n][2], 60, 90, "archer.png", hp=350, spd=150, dmg=3, atkspd=3, cost=6, mods=[mods.Ranged]),
              }[waves[i][n][0]]
 
 

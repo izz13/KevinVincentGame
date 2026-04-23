@@ -1,4 +1,4 @@
-import pygame, random, math
+import pygame, random, math, classes
 pygame.init()
 
 
@@ -371,8 +371,32 @@ class StatusPoison:
         pass
 
 #ENEMY MODS
+class Ranged:
+    def __init__(self, enemy):
+        self.enemy = enemy
+        self.projectiles = []
+        self.time = random.uniform(0, 1.75)
 
+    def update(self):
+        if self.time >= 1.5:
+            self.time = 0
+            self.newprojectile = classes.Projectile(self.enemy.pos[0], self.enemy.pos[1], 50, 25, "archerProjectile.png", self.enemy.player.pos - self.enemy.pos, 400, 15)
+            self.newprojectile.lifetime = 15
+            self.projectiles.append(self.newprojectile)
+        for projectile in self.projectiles:
+            projectile.update(self.enemy.player, self.enemy.dt, self.enemy.camerapos, self.enemy.screen)
+        self.time += self.enemy.dt
 
+    def renderover(self):
+        self.image = pygame.image.load("bow.png")
+        self.image = pygame.transform.scale(self.image, [25, 25])
+        self.image = pygame.transform.rotate(self.image, (pygame.math.Vector2(self.enemy.player.pos) - pygame.math.Vector2(self.enemy.pos)).angle_to(pygame.math.Vector2(0, 1)) - 90)
+        self.image.set_colorkey([0, 0, 0])
+        self.imagerect = self.image.get_rect(center=self.enemy.rect.center)
+        self.enemy.screen.blit(self.image, self.imagerect.topleft - self.enemy.camerapos)
+
+    def renderunder(self):
+        pass
 #MISC
 class FireProjectile:
     def __init__(self, x, y, vel):
