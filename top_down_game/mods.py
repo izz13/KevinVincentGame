@@ -106,8 +106,9 @@ class OrbitalStrike:
         self.player.screen.blit(self.mapimg, self.imgcords)
         #1192, -389
         #707 103
-        pygame.draw.circle(self.player.screen, [0, 255, 255], (self.player.pos[0] * 0.595 + 708, self.player.pos[1] * 0.2828 + 103), 5)
-
+        pygame.draw.circle(self.player.screen, [0, 255, 255], ((self.player.pos[0] - 444) * 0.125 + 708, (self.player.pos[1] - 439) * 0.15625 + 118), 4)
+        for enemy in self.player.enemies:
+            pygame.draw.circle(self.player.screen, [255, 0, 0], ((enemy.pos[0] - 444) * 0.125 + 708, (enemy.pos[1] - 439) * 0.15625 + 118), 4)
     def renderunder(self):
         pass
     def renderover(self):
