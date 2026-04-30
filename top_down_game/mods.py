@@ -1,4 +1,4 @@
-import pygame, random, math, classes
+import pygame, random, math, classes, constants
 pygame.init()
 
 
@@ -67,11 +67,6 @@ class GoldenArrow:
         self.projectile = projectile
         self.level = level
         self.projectile.manacost += 1.5
-        self.projectile.image = pygame.image.load("archerArrow.png")
-        self.projectile.image = pygame.transform.flip(self.projectile.image, True, False)
-        self.projectile.image = pygame.transform.scale(self.projectile.image, [self.projectile.w, self.projectile.h])
-        self.projectile.image = pygame.transform.rotate(self.projectile.image, self.projectile.velocity.angle_to(pygame.Vector2(1, 0)))
-        self.projectile.image.set_colorkey([0, 0, 0])
         self.firetrail = []
 
 
@@ -96,18 +91,23 @@ class GoldenArrow:
 
 #PLAYER
 
-class MiniMap:
+class OrbitalStrike:
     shopimage = "bg.png"
     maxlevel = 1
     def __init__ (self, player, level):
         self.mapimg = pygame.image.load("bg.png")
+        self.mapimg = pygame.transform.scale(self.mapimg, [200, 200])
         self.player = player
-        self.imgcords = [400, 320]
+        self.imgcords = [constants.SCREENWIDTH - 200, 0]
         self.level = level
 
 
     def update(self):
         self.player.screen.blit(self.mapimg, self.imgcords)
+        #1192, -389
+        #707 103
+        pygame.draw.circle(self.player.screen, [0, 255, 255], (self.player.pos[0] * 0.595 + 708, self.player.pos[1] * 0.2828 + 103), 5)
+
     def renderunder(self):
         pass
     def renderover(self):
@@ -218,7 +218,7 @@ class Radiation:
     def update(self):
         for enemy in self.player.enemies:
             if enemy.rect.colliderect(self.rect):
-                enemy.hurt(25*self.player.dt)
+                enemy.hurt(75 * self.player.dt)
     def renderunder(self):
         self.rect.center = self.player.pos
         self.player.screen.blit(self.img, self.rect.topleft - self.player.camerapos)
@@ -398,12 +398,12 @@ class Ranged:
         self.targetpos = pygame.math.Vector2(0, 1)
 
     def update(self):
-        self.movetime = math.dist(self.enemy.pos, self.enemy.player.pos) / 400
+        self.movetime = math.dist(self.enemy.pos, self.enemy.player.pos) / 200
         self.targetpos = self.enemy.player.pos + self.enemy.player.direction * self.enemy.player.speed
-        if self.time >= 1.5:
+        if self.time >= 1.75:
             self.time = 0
-            self.newprojectile = classes.Projectile(self.enemy.pos[0], self.enemy.pos[1], 50, 25, "archerProjectile.png", self.targetpos - self.enemy.pos, 400, 15)
-            self.newprojectile.lifetime = 15
+            self.newprojectile = classes.Projectile(self.enemy.pos[0], self.enemy.pos[1], 50, 25, "archerProjectile.png", self.targetpos - self.enemy.pos, 200, 3)
+            self.newprojectile.lifetime = 2
             self.projectiles.append(self.newprojectile)
         for projectile in self.projectiles:
             projectile.update(self.enemy.player, self.enemy.dt, self.enemy.camerapos, self.enemy.screen)
@@ -411,7 +411,7 @@ class Ranged:
 
     def renderover(self):
         self.image = pygame.image.load("bow.png")
-        self.image = pygame.transform.scale(self.image, [25, 25])
+        self.image = pygame.transform.scale(self.image, [50, 50])
         self.image = pygame.transform.rotate(self.image, (pygame.math.Vector2(self.targetpos) - pygame.math.Vector2(self.enemy.pos)).angle_to(pygame.math.Vector2(0, 1)) - 90)
         self.image.set_colorkey([0, 0, 0])
         self.imagerect = self.image.get_rect(center=self.enemy.rect.center)
@@ -463,5 +463,5 @@ def renderover(self):
 
 
 projectilemods = [Lifetime, Sharptip, Poisontip, GoldenArrow]
-playermods = [Heal, Antiheal, Teleport, Morehealth, Radiation, SecondLife, MiniMap]
+playermods = [Heal, Antiheal, Teleport, Morehealth, Radiation, SecondLife, OrbitalStrike]
 manamods = [Managamble, Manaburst, Managain, Moremana]
