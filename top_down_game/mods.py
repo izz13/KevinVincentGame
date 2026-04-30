@@ -95,6 +95,24 @@ class GoldenArrow:
 
 
 #PLAYER
+
+class MiniMap:
+    shopimage = "bg.png"
+    maxlevel = 1
+    def __init__ (self, player, level):
+        self.mapimg = pygame.image.load("bg.png")
+        self.player = player
+        self.imgcords = [400, 320]
+        self.level = level
+
+
+    def update(self):
+        self.player.screen.blit(self.mapimg, self.imgcords)
+    def renderunder(self):
+        pass
+    def renderover(self):
+        pass
+
 class Heal:
     shopimage = "heal.png"
     maxlevel = 9
@@ -143,6 +161,7 @@ class Teleport:
         self.rect = self.ogimage.get_rect(center = self.pos)
         self.aniframes = 0
         self.level = level
+
 
     def update(self):
         if pygame.key.get_just_pressed()[pygame.K_v] and self.state == "inactive" and self.cooldown <= 0 and self.player.mana >= 50:
@@ -444,5 +463,5 @@ def renderover(self):
 
 
 projectilemods = [Lifetime, Sharptip, Poisontip, GoldenArrow]
-playermods = [Heal, Antiheal, Teleport, Morehealth, Radiation, SecondLife]
+playermods = [Heal, Antiheal, Teleport, Morehealth, Radiation, SecondLife, MiniMap]
 manamods = [Managamble, Manaburst, Managain, Moremana]
