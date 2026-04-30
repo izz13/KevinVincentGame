@@ -92,16 +92,23 @@ class GoldenArrow:
 #PLAYER
 
 class OrbitalStrike:
-    shopimage = "bg.png"
+    shopimage = "radarShop.png"
     maxlevel = 1
     def __init__ (self, player, level):
-        self.mapimg = pygame.image.load("bg.png")
+        self.mapimg = pygame.image.load("radar.png")
         self.mapimg = pygame.transform.scale(self.mapimg, [200, 200])
         self.player = player
         self.imgcords = [constants.SCREENWIDTH - 200, 0]
         self.level = level
+        self.radarRect = self.mapimg.get_rect(topleft=self.imgcords)
 
 
+
+    def strike(self):
+        if pygame.mouse.get_pressed()[0] and self.radarRect.collidepoint(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]):
+            pygame.draw.circle(self.player.screen, [0, 255, 255],
+                               ((self.player.pos[0] + 444) / 0.125 - 708, (self.player.pos[1] + 439) / 0.15625 - 118),
+                               4)
     def update(self):
         self.player.screen.blit(self.mapimg, self.imgcords)
         #1192, -389
