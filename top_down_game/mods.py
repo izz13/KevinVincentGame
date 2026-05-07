@@ -106,11 +106,12 @@ class OrbitalStrike:
 
 
 
+
     def strike(self):
         if pygame.mouse.get_just_pressed()[0] and self.radarRect.collidepoint(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]) and self.state == "idle":
             self.nukex = (pygame.mouse.get_pos()[0] - 708) / 0.125 + 444
             self.nukey = (pygame.mouse.get_pos()[1] - 118) / 0.15625 + 439
-            self.nukeimage = pygame.transform.scale(pygame.image.load("Nuke.png"), [30, 20])
+            self.nukeimage = pygame.transform.scale(pygame.image.load("OrbitalStrikeBomb.png"), [30, 20])
             self.nukeimage.set_colorkey([0, 0, 0])
             self.rect = self.nukeimage.get_rect(center=[self.nukex, self.nukey])
             self.state = "nuking"
@@ -122,8 +123,8 @@ class OrbitalStrike:
             if self.anitime >= 0.5:
                 self.anitime = 0
                 self.state = "idle"
-                for i in range(10):
-
+                for i in range(5):
+                    pass
 
 
     def update(self):
