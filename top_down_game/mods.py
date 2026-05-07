@@ -101,16 +101,18 @@ class OrbitalStrike:
         self.imgcords = [constants.SCREENWIDTH - 200, 0]
         self.level = level
         self.radarRect = self.mapimg.get_rect(topleft=self.imgcords)
+        self.mouse = pygame.mouse.get_pos()
 
 
 
     def strike(self):
         if pygame.mouse.get_pressed()[0] and self.radarRect.collidepoint(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]):
             pygame.draw.circle(self.player.screen, [0, 255, 255],
-                               ((self.player.pos[0] + 444) / 0.125 - 708, (self.player.pos[1] + 439) / 0.15625 - 118),
-                               4)
+                               ((self.mouse[0] + 444) / 0.125 - 708, (self.mouse[1] + 439) / 0.15625 - 118),
+                               20)
     def update(self):
-        self.player.screen.blit(self.mapimg, self.imgcords)
+        self.strike()
+        self.player.screen.blit(self.mapimg, self.radarRect)
         #1192, -389
         #707 103
         pygame.draw.circle(self.player.screen, [0, 255, 255], ((self.player.pos[0] - 444) * 0.125 + 708, (self.player.pos[1] - 439) * 0.15625 + 118), 4)
