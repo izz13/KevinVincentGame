@@ -55,7 +55,7 @@ wave4 = [
 ]
 waves = [wave1, wave2, wave3, wave4]
 
-#waves = [wave4]
+waves = [wave4]
 
 for i in range(len(waves)):
     for n in range(len(waves[i])):

@@ -101,14 +101,31 @@ class OrbitalStrike:
         self.imgcords = [constants.SCREENWIDTH - 200, 0]
         self.level = level
         self.radarRect = self.mapimg.get_rect(topleft=self.imgcords)
+        self.state = "idle"
+        self.anitime = 0
 
 
 
     def strike(self):
-        if pygame.mouse.get_pressed()[0] and self.radarRect.collidepoint(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]):
-            pygame.draw.circle(self.player.screen, [0, 255, 255],
-                               ((self.player.pos[0] + 444) / 0.125 - 708, (self.player.pos[1] + 439) / 0.15625 - 118),
-                               4)
+        if pygame.mouse.get_just_pressed()[0] and self.radarRect.collidepoint(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]) and self.state == "idle":
+            self.nukex = (pygame.mouse.get_pos()[0] - 708) / 0.125 + 444
+            self.nukey = (pygame.mouse.get_pos()[1] - 118) / 0.15625 + 439
+            self.nukeimage = pygame.transform.scale(pygame.image.load("Nuke.png"), [30, 20])
+            self.nukeimage.set_colorkey([0, 0, 0])
+            self.rect = self.nukeimage.get_rect(center=[self.nukex, self.nukey])
+            self.state = "nuking"
+        if self.state == "nuking":
+            self.player.screen.blit(self.nukeimage)
+
+
+            self.anitime += self.player.dt
+            if self.anitime >= 0.5:
+                self.anitime = 0
+                self.state = "idle"
+                for i in range(10):
+
+
+
     def update(self):
         self.player.screen.blit(self.mapimg, self.imgcords)
         #1192, -389
@@ -116,6 +133,7 @@ class OrbitalStrike:
         pygame.draw.circle(self.player.screen, [0, 255, 255], ((self.player.pos[0] - 444) * 0.125 + 708, (self.player.pos[1] - 439) * 0.15625 + 118), 4)
         for enemy in self.player.enemies:
             pygame.draw.circle(self.player.screen, [255, 0, 0], ((enemy.pos[0] - 444) * 0.125 + 708, (enemy.pos[1] - 439) * 0.15625 + 118), 4)
+        self.strike()
     def renderunder(self):
         pass
     def renderover(self):
@@ -406,11 +424,11 @@ class Ranged:
         self.targetpos = pygame.math.Vector2(0, 1)
 
     def update(self):
-        self.movetime = math.dist(self.enemy.pos, self.enemy.player.pos) / 200
+        self.movetime = math.dist(self.enemy.pos, self.enemy.player.pos) / 300
         self.targetpos = self.enemy.player.pos + self.enemy.player.direction * self.enemy.player.speed
         if self.time >= 1.75:
             self.time = 0
-            self.newprojectile = classes.Projectile(self.enemy.pos[0], self.enemy.pos[1], 50, 25, "archerProjectile.png", self.targetpos - self.enemy.pos, 200, 3)
+            self.newprojectile = classes.Projectile(self.enemy.pos[0], self.enemy.pos[1], 50, 25, "archerProjectile.png", self.targetpos - self.enemy.pos, 300, 5)
             self.newprojectile.lifetime = 2
             self.projectiles.append(self.newprojectile)
         for projectile in self.projectiles:
