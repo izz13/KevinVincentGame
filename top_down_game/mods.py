@@ -120,11 +120,16 @@ class OrbitalStrike:
             print(self.player.pos)
 
             self.anitime += self.player.dt
-            if self.anitime >= 10:
+            if self.anitime >= 0.5:
                 self.anitime = 0
                 self.state = "idle"
                 for i in range(5):
-                    pass
+                    self.shootangle = pygame.math.Vector2(0, 1)
+                    self.shootangle.rotate_ip(360 * i / 5)
+                    self.newprojectile = classes.Projectile(self.nukex, self.nukey, 30, 20, "playerprojectile.png", self.shootangle, 300, 60, self.player.pmods)
+                    if self.newprojectile.manacost <= self.player.mana:
+                        self.player.projectiles.append(self.newprojectile)
+                        self.player.mana -= self.newprojectile.manacost
 
 
 
