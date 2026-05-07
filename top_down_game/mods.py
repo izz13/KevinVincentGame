@@ -113,6 +113,9 @@ class OrbitalStrike:
             self.nukey = (pygame.mouse.get_pos()[1] - 118) / 0.15625 + 439
             self.nukeimage = pygame.transform.scale(pygame.image.load("OrbitalStrikeBomb.png"), [150, 150])
             self.nukeimage.set_colorkey([0, 0, 0])
+            self.cloudimg = pygame.image.load("mushroomCloud.png")
+            self.cloudrect = self.cloudimg.get_rect()
+            self.cloudrect.center  = [self.nukex, self.nukey]
             self.rect = self.nukeimage.get_rect(center=[self.nukex, self.nukey])
             self.state = "nuking"
         if self.state == "nuking":
@@ -123,6 +126,8 @@ class OrbitalStrike:
             if self.anitime >= 0.5:
                 self.anitime = 0
                 self.state = "idle"
+                self.player.screen.blit(self.cloudimg, self.rect)
+
                 for i in range(5):
                     self.shootangle = pygame.math.Vector2(0, 1)
                     self.shootangle.rotate_ip(360 * i / 5)
