@@ -461,6 +461,49 @@ class Ranged:
 
     def renderunder(self):
         pass
+class Sensai:
+    def __init__(self, enemy):
+        self.enemy = enemy
+        self.projectiles = []
+        self.time = random.uniform(0, 1.75)
+        self.targetpos = pygame.math.Vector2(0, 1)
+        self.image = pygame.image.load("SensaiBossWeapon.png")
+        self.image = pygame.transform.rotate(self.image, 90)
+        self.image.set_colorkey([0, 0, 0])
+        self.time = 0
+        self.state = "visible"
+
+    def update(self):
+        self.movetime = math.dist(self.enemy.pos, self.enemy.player.pos) / 300
+        self.targetpos = self.enemy.player.pos + self.enemy.player.direction * self.enemy.player.speed
+        if self.time >= 1.75:
+            self.time = 0
+            self.newprojectile = classes.Projectile(self.enemy.pos[0], self.enemy.pos[1], 36, 10, "SensaiBossWeapon.png", self.targetpos - self.enemy.pos, 300, 10)
+            self.newprojectile.lifetime = 2
+            self.projectiles.append(self.newprojectile)
+        for projectile in self.projectiles:
+            projectile.update(self.enemy.player, self.enemy.dt, self.enemy.camerapos, self.enemy.screen)
+        self.attack1()
+        self.time += self.enemy.dt
+
+    def renderover(self):
+        pos = [self.enemy.rect.centerx + 20, self.enemy.rect.centery]
+        self.imagerect = self.image.get_rect(center=pos)
+        self.image = pygame.transform.scale(self.image, [20, 100])
+        self.enemy.screen.blit(self.image, self.imagerect.topleft - self.enemy.camerapos)
+
+    def renderunder(self):
+        pass
+    def attack1(self):
+        if self.time >= 30 and self.state == "visible":
+            self.state = "invisible"
+            self.enemy.spd *= 4
+            self.time = 0
+        if self.time >= 10 and self.state == "invisible":
+            self.state = "visible"
+            self.enemy.spd /= 4
+            self.time = 0
+
 #MISC
 class FireProjectile:
     def __init__(self, x, y, vel):

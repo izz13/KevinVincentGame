@@ -5,6 +5,7 @@ wave1 = [
     ["bandit", -529, -496 + 640],
     ["bandit", 1563, -568 + 640],
     ["bandit", 1566, -414 + 640],
+[   "SensaiBoss", 486, -519]
 ]
 
 wave2 = [
@@ -53,7 +54,24 @@ wave4 = [
     ["bandit", 486, -519],
 
 ]
-waves = [wave1, wave2, wave3, wave4]
+
+wave5 = [
+["archer bandit", 406, -789],
+    ["archer bandit", 86, -771],
+    ["archer bandit", 838, -780],
+    ["fast bandit", 494, -636],
+    ["fast bandit", 494, -636],
+    ["fast bandit", 494, -636],
+    ["fast bandit", 494, -636],
+    ["bandit", 486, -519],
+    ["bandit", 486, -519],
+    ["bandit", 486, -519],
+    ["bandit", 486, -519],
+    ["bandit", 486, -519],
+    ["bandit", 486, -519],
+
+]
+waves = [wave1, wave2, wave3, wave4, wave5]
 
 #waves = [wave4]
 
@@ -63,6 +81,7 @@ for i in range(len(waves)):
             "bandit" : classes.Enemy(waves[i][n][1], waves[i][n][2], 60, 90, "enemy_bandit.png", hp=400, spd=150, dmg=6, atkspd=3, cost=3),
             "fast bandit": classes.Enemy(waves[i][n][1], waves[i][n][2], 60, 90, "fastbandit.png", hp=250, spd=250, dmg=4, atkspd=6, cost=4),
             "archer bandit": classes.Enemy(waves[i][n][1], waves[i][n][2], 60, 90, "archer.png", hp=150, spd=150, dmg=3, atkspd=3, cost=6, mods=[mods.Ranged]),
+            "SensaiBoss": classes.Enemy(waves[i][n][1], waves[i][n][2], 60, 90, "AngrySensai.png", hp=10000, spd=50, dmg=50, atkspd=1, cost=50, mods=[mods.Sensai])
              }[waves[i][n][0]]
 
 

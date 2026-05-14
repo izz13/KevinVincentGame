@@ -7,7 +7,7 @@ screen = pygame.display.set_mode([SCREENWIDTH,SCREENHEIGHT])
 clock = pygame.time.Clock()
 fps = 60
 
-#PLAYER
+#PLAYERs
 player = classes.Player([SCREENWIDTH / 2, SCREENHEIGHT / 2])
 dt = 0
 debug = True
