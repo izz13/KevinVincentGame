@@ -113,21 +113,16 @@ class OrbitalStrike:
             self.nukey = (pygame.mouse.get_pos()[1] - 118) / 0.15625 + 439
             self.nukeimage = pygame.transform.scale(pygame.image.load("OrbitalStrikeBomb.png"), [150, 150])
             self.nukeimage.set_colorkey([0, 0, 0])
-            self.cloudimg = pygame.image.load("mushroomCloud.png")
-            self.cloudrect = self.cloudimg.get_rect()
-            self.cloudrect.center  = [self.nukex, self.nukey]
+            self.ogcloudimg = pygame.image.load("mushroomCloud.png")
             self.rect = self.nukeimage.get_rect(center=[self.nukex, self.nukey])
             self.state = "nuking"
+
         if self.state == "nuking":
             self.player.screen.blit(self.nukeimage, self.rect.topleft - self.player.camerapos)
-            print(self.player.pos)
-
             self.anitime += self.player.dt
             if self.anitime >= 0.5:
                 self.anitime = 0
-                self.state = "idle"
-                self.player.screen.blit(self.cloudimg, self.rect)
-
+                self.state = "exploding"
                 for i in range(5):
                     self.shootangle = pygame.math.Vector2(0, 1)
                     self.shootangle.rotate_ip(360 * i / 5)
@@ -136,8 +131,15 @@ class OrbitalStrike:
                         self.player.projectiles.append(self.newprojectile)
                         self.player.mana -= self.newprojectile.manacost
 
-
-
+        if self.state == "exploding":
+            self.anitime += self.player.dt
+            self.mushroomcloud = pygame.transform.scale(self.ogcloudimg, [self.anitime / 2 * 400, self.anitime / 2 * 400])
+            self.mushroomcloud.set_colorkey([0, 0, 0])
+            self.mushroomcloudrect = self.mushroomcloud.get_rect(center=[self.nukex, self.nukey])
+            self.player.screen.blit(self.mushroomcloud, self.mushroomcloudrect.topleft - self.player.camerapos)
+            if self.anitime >= 2:
+                self.anitime = 0
+                self.state = "idle"
 
     def update(self):
         self.player.screen.blit(self.mapimg, self.imgcords)
