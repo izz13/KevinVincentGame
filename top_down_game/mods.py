@@ -115,7 +115,17 @@ class OrbitalStrike:
             self.nukeimage.set_colorkey([0, 0, 0])
             self.ogcloudimg = pygame.image.load("mushroomCloud.png")
             self.rect = self.nukeimage.get_rect(center=[self.nukex, self.nukey])
-            self.state = "nuking"
+
+            self.totalcost = 0
+            self.newprojectiles = []
+            for i in range(5):
+                self.shootangle = pygame.math.Vector2(0, 1)
+                self.shootangle.rotate_ip(360 * i / 5)
+                self.newprojectile = classes.Projectile(self.nukex, self.nukey, 30, 20, "playerprojectile.png", self.shootangle, 300, 60, self.player.pmods)
+                self.totalcost += self.newprojectile.manacost
+                self.newprojectiles.append(self.newprojectile)
+            if self.player.mana >= self.totalcost:
+                self.state = "nuking"
 
         if self.state == "nuking":
             self.player.screen.blit(self.nukeimage, self.rect.topleft - self.player.camerapos)
@@ -123,21 +133,16 @@ class OrbitalStrike:
             if self.anitime >= 0.5:
                 self.anitime = 0
                 self.state = "exploding"
-                for i in range(5):
-                    self.shootangle = pygame.math.Vector2(0, 1)
-                    self.shootangle.rotate_ip(360 * i / 5)
-                    self.newprojectile = classes.Projectile(self.nukex, self.nukey, 30, 20, "playerprojectile.png", self.shootangle, 300, 60, self.player.pmods)
-                    if self.newprojectile.manacost <= self.player.mana:
-                        self.player.projectiles.append(self.newprojectile)
-                        self.player.mana -= self.newprojectile.manacost
+                self.player.projectiles += self.newprojectiles
+                self.player.mana -= self.totalcost
 
         if self.state == "exploding":
             self.anitime += self.player.dt
-            self.mushroomcloud = pygame.transform.scale(self.ogcloudimg, [self.anitime / 2 * 400, self.anitime / 2 * 400])
+            self.mushroomcloud = pygame.transform.scale(self.ogcloudimg, [self.anitime / 0.5 * 200, self.anitime / 0.5 * 200])
             self.mushroomcloud.set_colorkey([0, 0, 0])
             self.mushroomcloudrect = self.mushroomcloud.get_rect(center=[self.nukex, self.nukey])
             self.player.screen.blit(self.mushroomcloud, self.mushroomcloudrect.topleft - self.player.camerapos)
-            if self.anitime >= 2:
+            if self.anitime >= 0.5:
                 self.anitime = 0
                 self.state = "idle"
 

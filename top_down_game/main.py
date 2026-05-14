@@ -34,7 +34,7 @@ shop = popup.Shop(593, 515, 400, 500)
 inventory = popup.Inventory(204, 384, 400, 500)
 forgerect = pygame.rect.Rect(-143, 43, 170, 138)
 forgetext = ui.Text("Press SPACE to open forge", -58, 3, 10, 30, [255, 255, 255])
-forge = popup.Forge(424, 384, 700, 500)
+
 shopopen = False
 inventoryopen = False
 forgeopen = False
@@ -95,28 +95,36 @@ def updategame(dt):
         shop.update(player, inventory, screen)
         if shop.exitbutton.checkcollisions():
             shopopen = False
-
-    #UPDATE FORGE
-    if player.rect.colliderect(forgerect) and wavestate == "nowave":
-        forgetext.render(screen, camerapos)
-        if pygame.key.get_just_pressed()[pygame.K_SPACE]:
-            forgeopen = True
-            inventoryopen = False
-    if forgeopen:
-        forge.update(inventory, player, screen)
-        if forge.exitbutton.checkcollisions():
             forgeopen = False
-
 
     #UPDATE INVENTORY
     inventorybutton.render(screen)
     if inventorybutton.checkcollisions() and not inventoryopen:
         inventoryopen = True
-        forgeopen = False
     if inventoryopen:
         inventory.update(player, screen)
         if inventory.exitbutton.checkcollisions():
             inventoryopen = False
+            forgeopen = False
+
+    #UPDATE FORGE
+    if player.rect.colliderect(forgerect) and wavestate == "nowave":
+        forgetext.render(screen, camerapos)
+        if pygame.key.get_just_pressed()[pygame.K_SPACE]:
+            inventoryopen = True
+            forgeopen = True
+
+    if forgeopen:
+        hammer = pygame.image.load("hammer.png")
+        hammer = pygame.transform.scale(hammer, [40, 20])
+        hammer.set_colorkey([0, 0, 0])
+        hammerrect = hammer.get_rect(center=pygame.mouse.get_pos())
+        coverrect1 = pygame.rect.Rect(12, 183, 386, 110)
+        coverrect2 = pygame.rect.Rect(127, 146, 156, 36)
+        pygame.draw.rect(screen, [3, 240, 252], coverrect1)
+        pygame.draw.rect(screen, [3, 240, 252], coverrect2)
+        screen.blit(hammer, hammerrect)
+
 
 isrunning = True
 while isrunning:
