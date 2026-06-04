@@ -466,6 +466,53 @@ class Ranged:
 
     def renderunder(self):
         pass
+
+class Enemypoison:
+    shopimage = "lifetime.png"
+    maxlevel = 3
+    def __init__(self, projectile, level):
+        self.projectile = projectile
+
+    def update(self):
+        for collidable in [self.projectile.collidables]:
+            if self.projectile.rect.colliderect(collidable.rect):
+                if not collidable in self.projectile.alreadycollide:
+                    collidable.mods.append(StatusPoison(collidable, 10))
+    def renderunder(self):
+        pass
+    def renderover(self):
+        pass
+
+class Poisoner:
+    def __init__(self, enemy):
+        self.enemy = enemy
+        self.projectiles = []
+        self.time = random.uniform(0, 1.75)
+        self.targetpos = pygame.math.Vector2(0, 1)
+
+    def update(self):
+        self.movetime = math.dist(self.enemy.pos, self.enemy.player.pos) / 300
+        self.targetpos = self.enemy.player.pos + self.enemy.player.direction * self.enemy.player.speed
+        if self.time >= 1.75:
+            self.time = 0
+            self.newprojectile = classes.Projectile(self.enemy.pos[0], self.enemy.pos[1], 35, 25, "poisondart.png", self.targetpos - self.enemy.pos, 300, 1, [[Enemypoison, 0]])
+            self.newprojectile.lifetime = 2
+            self.projectiles.append(self.newprojectile)
+        for projectile in self.projectiles:
+            projectile.update(self.enemy.player, self.enemy.dt, self.enemy.camerapos, self.enemy.screen)
+        self.time += self.enemy.dt
+
+    def renderover(self):
+        self.image = pygame.image.load("bow.png")
+        self.image = pygame.transform.scale(self.image, [100, 25])
+        self.image = pygame.transform.rotate(self.image, (pygame.math.Vector2(self.targetpos) - pygame.math.Vector2(self.enemy.pos)).angle_to(pygame.math.Vector2(0, 1)) - 90)
+        self.image.set_colorkey([0, 0, 0])
+        self.imagerect = self.image.get_rect(center=self.enemy.rect.center)
+        self.enemy.screen.blit(self.image, self.imagerect.topleft - self.enemy.camerapos)
+
+    def renderunder(self):
+        pass
+
 class Sensai:
     def __init__(self, enemy):
         self.enemy = enemy
@@ -511,7 +558,7 @@ class Sensai:
         self.image = pygame.transform.scale(self.image, [20, 100])
         if self.state == "visible":
             self.enemy.screen.blit(self.image, self.imagerect.topleft - self.enemy.camerapos)
-        else:
+
 
 
     def renderunder(self):
