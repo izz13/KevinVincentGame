@@ -472,13 +472,26 @@ class Sensai:
         self.projectiles = []
         self.time = random.uniform(0, 1.75)
         self.targetpos = pygame.math.Vector2(0, 1)
+        self.imageVisible = pygame.image.load("AngrySensai.png")
+        self.imageVisible = pygame.transform.scale(self.imageVisible, [60, 90])
+        self.imageInvisible = pygame.Surface([60,90])
+        self.imageInvisible.fill([255, 0, 0])
+        self.imageInvisible.set_colorkey([255,0,0])
+        self.imageVisible.set_colorkey([0, 0, 0])
         self.image = pygame.image.load("SensaiBossWeapon.png")
         self.image = pygame.transform.rotate(self.image, 90)
-        self.image.set_colorkey([0, 0, 0])
         self.time = 0
         self.state = "visible"
+        self.circle = pygame.image.load("Circle.png")
+        self.circleRect = self.circle.get_rect()
+        self.circle = pygame.transform.scale(self.circle, [97, 97])
+        self.visibletime = 0
 
     def update(self):
+        if self.state == "visible":
+            self.enemy.image = self.imageVisible
+        elif self.state == "invisible":
+            self.enemy.image = self.imageInvisible
         self.movetime = math.dist(self.enemy.pos, self.enemy.player.pos) / 300
         self.targetpos = self.enemy.player.pos + self.enemy.player.direction * self.enemy.player.speed
         if self.time >= 1.75:
@@ -490,24 +503,34 @@ class Sensai:
             projectile.update(self.enemy.player, self.enemy.dt, self.enemy.camerapos, self.enemy.screen)
         self.attack1()
         self.time += self.enemy.dt
+        self.visibletime += self.enemy.dt
 
     def renderover(self):
         pos = [self.enemy.rect.centerx + 20, self.enemy.rect.centery]
         self.imagerect = self.image.get_rect(center=pos)
         self.image = pygame.transform.scale(self.image, [20, 100])
-        self.enemy.screen.blit(self.image, self.imagerect.topleft - self.enemy.camerapos)
+        if self.state == "visible":
+            self.enemy.screen.blit(self.image, self.imagerect.topleft - self.enemy.camerapos)
+        else:
+
 
     def renderunder(self):
+        '''circlepos = [self.enemy.rect.centerx, self.enemy.rect.centery]
+        self.circlerect = self.circle.get_rect(center=circlepos)
+        self.enemy.screen.blit(self.circle, self.circlerect.topleft - self.enemy.camerapos)'''
         pass
     def attack1(self):
-        if self.time >= 30 and self.state == "visible":
+        if self.visibletime >= 5 and self.state == "visible":
+            print("Changing state")
             self.state = "invisible"
             self.enemy.spd *= 4
-            self.time = 0
-        if self.time >= 10 and self.state == "invisible":
+            self.visibletime = 0
+        elif self.visibletime >= 5 and self.state == "invisible":
             self.state = "visible"
             self.enemy.spd /= 4
-            self.time = 0
+            self.visibletime = 0
+    def attack2(self):
+        pass
 
 #MISC
 class FireProjectile:

@@ -5,6 +5,7 @@ wave1 = [
     ["bandit", -529, -496 + 640],
     ["bandit", 1563, -568 + 640],
     ["bandit", 1566, -414 + 640],
+    ["sensai", 1566, -414 + 640]
 ]
 
 wave2 = [
@@ -65,6 +66,7 @@ for i in range(len(waves)):
             "bandit" : classes.Enemy(waves[i][n][1], waves[i][n][2], 60, 90, "enemy_bandit.png", hp=400, spd=150, dmg=6, atkspd=3, cost=3),
             "fast bandit": classes.Enemy(waves[i][n][1], waves[i][n][2], 60, 90, "fastbandit.png", hp=250, spd=250, dmg=4, atkspd=6, cost=4),
             "archer bandit": classes.Enemy(waves[i][n][1], waves[i][n][2], 60, 90, "archer.png", hp=150, spd=150, dmg=3, atkspd=3, cost=6, mods=[mods.Ranged]),
+            "sensai": classes.Enemy(waves[i][n][1], waves[i][n][2], 60, 90, "AngrySensai.png", hp=3000, spd=50, dmg=50, atkspd=10, cost=50, mods=[mods.Sensai]),
              }[waves[i][n][0]]
 
 
