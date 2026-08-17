@@ -4,7 +4,6 @@ import math
 from pygame import PixelArray
 from ui import text
 
-
 pygame.init()
 
 FIRSTLEVELNUM = 3
@@ -20,23 +19,19 @@ class Player:
        self.facing = None
        self.tilesx = tilesx
        self.tilesy = tilesy
-       #self.image = image
-       #self.spritesheet = SpriteSheet(self.image)
-       self.boysheet = SpriteSheet("boy.png")
-       self.girlsheet = SpriteSheet("girl.png")
-       self.sheets = [self.boysheet, self.girlsheet]
-       self.sheetindex = 0
-       self.setimgs("left")
+       self.image = image
+       self.spritesheet = SpriteSheet(self.image)
 
-       '''
-       self.frontImage = pygame.transform.scale(pygame.image.load("FrontPOV.png"), [w, h])
-       self.backImage = pygame.transform.scale(pygame.image.load("BackPOV.png"), [w, h])
-       self.sideImage = pygame.transform.scale(pygame.image.load("SidePOV.png"), [w, h])
+       self.frontImage = self.spritesheet.get_sprite(1, 64, 64, self.w, self.h)
+       self.backImage = self.spritesheet.get_sprite(0, 64, 64, self.w, self.h)
+       self.sideImage = self.spritesheet.get_sprite(2, 64, 64, self.w, self.h)
+       self.reverseSideImage = self.spritesheet.get_sprite(3, 64, 64, self.w, self.h)
        self.frontImage.set_colorkey([0, 0, 0])
        self.backImage.set_colorkey([0, 0, 0])
        self.sideImage.set_colorkey([0, 0, 0])
-       self.reverseSideImage = pygame.transform.flip(self.sideImage, True, False)
-       '''''
+       self.reverseSideImage.set_colorkey([0, 0, 0])
+       self.images = {"movingup" : self.backImage, "movingdown" : self.frontImage, "movingleft" : self.reverseSideImage, "movingright" : self.sideImage}
+
        self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
        self.aniframes = 0
        self.pastaniframes = 0
@@ -47,32 +42,22 @@ class Player:
        self.controls = 0
        self.keys = [[pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT], [pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d]]
 
-   def setimgs(self, direction="None"):
-       if direction == "left":
-           if self.sheetindex > 0:
-               self.sheetindex -= 1
-           else:
-               self.sheetindex = 0
-       elif direction == "right":
-           if self.sheetindex < len(self.sheets) -1:
-               self.sheetindex += 1
-           else:
-               self.sheetindex = len(self.sheets) -1
-       self.spritesheet = self.sheets[self.sheetindex]
-       self.backImage = self.spritesheet.get_sprite(0, 64, 64, self.w, self.h)
+   def updateimage(self):
+       self.spritesheet = SpriteSheet(self.image)
        self.frontImage = self.spritesheet.get_sprite(1, 64, 64, self.w, self.h)
+       self.backImage = self.spritesheet.get_sprite(0, 64, 64, self.w, self.h)
        self.sideImage = self.spritesheet.get_sprite(2, 64, 64, self.w, self.h)
        self.reverseSideImage = self.spritesheet.get_sprite(3, 64, 64, self.w, self.h)
-       self.images = {"movingup" : self.backImage, "movingdown" : self.frontImage, "movingleft" : self.reverseSideImage, "movingright" : self.sideImage}
-
+       self.frontImage.set_colorkey([0, 0, 0])
+       self.backImage.set_colorkey([0, 0, 0])
+       self.sideImage.set_colorkey([0, 0, 0])
 
    def render(self, screen):
+       self.updateimage()
+       self.images = {"movingup" : self.backImage, "movingdown" : self.frontImage, "movingleft" : self.reverseSideImage, "movingright" : self.sideImage}
        if self.state in self.images.keys():
            self.currentimage = self.images[self.state]
        screen.blit(self.currentimage, self.rect)
-
-
-
 
    def checkcollisions(self, walls, xvel, yvel, pushables, tilesx, tilesy, doors, robots, gates):
        if self.coordsx + xvel < 0 or self.coordsx + xvel > tilesx - 1 or self.coordsy + yvel < 0 or self.coordsy + yvel > tilesy - 1:
@@ -199,84 +184,6 @@ class Player:
            if self.aniframes - self.pastaniframes >= 2:
                self.state = "idle"
        self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
-   def updatepush(self, pushables, robots, xvel, yvel): #This took way to long 😭
-        if pushables != []:
-            for pushable in pushables:
-                if math.dist([self.coordsx + xvel, self.coordsy + yvel], [pushable.coordsx, pushable.coordsy]) <= 0.00000001:
-                    pushable.move(xvel / 15, yvel / 15)
-                    if self.aniframes - self.pastaniframes == 15:
-                        pushable.coordsx = round(pushable.coordsx)
-                        pushable.coordsy = round(pushable.coordsy)
-        if robots != []:
-            for robot in robots:
-                if math.dist([self.coordsx + xvel, self.coordsy + yvel], [robot.coordsx, robot.coordsy]) <= 0.00000001:
-                    robot.coordsx += xvel / 15
-                    robot.coordsy += yvel / 15
-                if self.aniframes - self.pastaniframes == 15:
-                    robot.coordsx = round(robot.coordsx)
-                    robot.coordsy = round(robot.coordsy)
-   def updatepos(self, walls, pushables, doors, robots, gates, levelunlocks):
-        self.keys = [[pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT], [pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d]]
-        self.aniframes += 1
-        if self.state == "idle":
-            if pygame.key.get_pressed()[self.keys[int(self.controls)][0]]:
-                self.facing = "movingup"
-                if self.checkcollisions(walls + levelunlocks, 0, -1, pushables, self.tilesx, self.tilesy, doors, robots, gates):
-                    self.state = "movingup"
-                    self.pastaniframes = self.aniframes
-            if pygame.key.get_pressed()[self.keys[int(self.controls)][1]]:
-                self.facing = "movingdown"
-                if self.checkcollisions(walls + levelunlocks, 0, 1, pushables, self.tilesx, self.tilesy, doors, robots, gates):
-                    self.state = "movingdown"
-                    self.pastaniframes = self.aniframes
-            if pygame.key.get_pressed()[self.keys[int(self.controls)][2]]:
-                self.facing = "movingleft"
-                if self.checkcollisions(walls + levelunlocks, -1, 0, pushables, self.tilesx, self.tilesy, doors, robots, gates):
-                    self.state = "movingleft"
-                    self.pastaniframes = self.aniframes
-            if pygame.key.get_pressed()[self.keys[int(self.controls)][3]]:
-                self.facing = "movingright"
-                if self.checkcollisions(walls + levelunlocks, 1, 0, pushables, self.tilesx, self.tilesy, doors, robots, gates):
-                    self.state = "movingright"
-                    self.pastaniframes = self.aniframes
-        if self.state == "movingup":
-            if self.aniframes - self.pastaniframes > 15:
-                self.state = "movecooldown"
-                self.pastaniframes = self.aniframes
-            else:
-                self.updatepush(pushables, robots, 0, -1)
-                self.coordsy -= 1 / 15
-        if self.state == "movingdown":
-            if self.aniframes - self.pastaniframes > 15:
-                self.state = "movecooldown"
-                self.pastaniframes = self.aniframes
-            else:
-                self.updatepush(pushables, robots, 0, 1)
-                self.coordsy += 1 / 15
-        if self.state == "movingleft":
-            if self.aniframes - self.pastaniframes > 15:
-                self.state = "movecooldown"
-                self.pastaniframes = self.aniframes
-            else:
-                self.updatepush(pushables, robots, -1, 0)
-                self.coordsx -= 1 / 15
-        if self.state == "movingright":
-            if self.aniframes - self.pastaniframes > 15:
-                self.state = "movecooldown"
-                self.pastaniframes = self.aniframes
-            else:
-                self.updatepush(pushables, robots, 1, 0)
-                self.coordsx += 1 / 15
-        if self.state == "movecooldown":
-            self.facing = None
-            self.coordsx = round(self.coordsx)
-            self.coordsy = round(self.coordsy)
-            self.gridx = self.coordsx
-            self.gridy = self.coordsy
-            if self.aniframes - self.pastaniframes >= 2:
-                self.state = "idle"
-        self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
-
 
    def update(self, screen, walls, pushables, doors, robots, gates, levelunlocks):
        self.updatepos(walls, pushables, doors, robots, gates, levelunlocks)
@@ -454,15 +361,17 @@ class Door:
         self.tilesy = tilesy
         self.image = image
         self.frame = frame
-        if self.frame == 0:
-            self.type = "plate"
+        if frame == 0:
+            self.state = "sensor"
         else:
-            self.type = "door"
+            self.state = "door"
         self.color = color
         self.pixelarray = PixelArray(pygame.image.load(self.image))
         self.pixelarray.replace((255, 255, 255), tuple(color))
         self.spritesheet = SpriteSheet(self.pixelarray.make_surface(), False)
         self.rect = pygame.rect.Rect(coordsx * WIDTH / tilesx, coordsy * HEIGTH / tilesy, w, h)
+        self.activate = False
+        self.open = False
 
     def render(self, screen):
         screen.blit(self.spritesheet.get_sprite(self.frame, 32, 32, self.w, self.h), self.rect)
@@ -472,18 +381,23 @@ class Door:
         self.updatestate(pushables, players, doors, robots)
 
     def updatestate(self, pushables, players, doors, robots):
-        if self.frame == 0:
-            self.activate = False
+        self.activate = False
+        self.open = False
+        if self.state == "sensor":
             if players != None:
                 for interactable in pushables + [players] + robots:
-                    if interactable.coordsx == self.coordsx and interactable.coordsy == self.coordsy:
+                    if self.rect.colliderect(interactable.rect):
                         self.activate = True
+        if self.state == "door":
+            self.open = False
             for door in doors:
-                if door.frame != 0 and door.color == self.color:
-                    if self.activate:
-                        door.frame = 2
-                    else:
-                        door.frame = 1
+                if door.state == "sensor" and door.color == self.color:
+                    if door.activate:
+                        self.open = True
+            if self.open:
+                self.frame = 2
+            else:
+                self.frame = 1
 class Robot:
         def __init__(self, coordsx, coordsy, w, h, tilesx, tilesy, image, color):
             self.coordsx = coordsx
@@ -561,14 +475,14 @@ class Robot:
         def updatepush(self, pushables, robots, xvel, yvel):  # This took way to long 😭
             if pushables != []:
                 for pushable in pushables:
-                    if math.dist([self.coordsx + xvel, self.coordsy + yvel], [pushable.coordsx, pushable.coordsy]) <= 0.00000001:
+                    if math.dist([self.coordsx + xvel, self.coordsy + yvel], [pushable.coordsx, pushable.coordsy]) <= 0.005:
                         pushable.move(xvel / 15, yvel / 15)
                         if self.aniframes - self.pastaniframes == 15:
                             pushable.coordsx = round(pushable.coordsx)
                             pushable.coordsy = round(pushable.coordsy)
             if robots != []:
                 for robot in robots:
-                    if math.dist([self.coordsx + xvel, self.coordsy + yvel], [robot.coordsx, robot.coordsy]) <= 0.00000001:
+                    if math.dist([self.coordsx + xvel, self.coordsy + yvel], [robot.coordsx, robot.coordsy]) <= 0.005:
                         robot.coordsx += xvel / 15
                         robot.coordsy += yvel / 15
                     if self.aniframes - self.pastaniframes == 15:
@@ -677,10 +591,7 @@ class ProgramHeader:
         self.aniframes += 1
         self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
 
-        # TEMPORARY
-        if self.state == "idle" and pygame.key.get_pressed()[pygame.K_f]:
-            self.state = "activated"
-            self.totaltimes = 1
+
 
         if self.state == "idle":
             for pushable in pushables:
@@ -711,12 +622,13 @@ class ProgramHeader:
         while self.currenttimes <= self.totaltimes:
             self.robotcommand = None
             for pushable in pushables:
-                if pushable.coordsx == x + xdir * startval and pushable.coordsy == y + ydir * startval and pushable.command != None:
-                    self.robotcommand = pushable.command
-                    self.pushablecoordsx = pushable.coordsx
-                    self.pushablecoordsy = pushable.coordsy
-                    if self.robotcommand == "function":
-                        frame3 = pushable.frame3
+                if not isinstance(pushable, Laser):
+                    if pushable.coordsx == x + xdir * startval and pushable.coordsy == y + ydir * startval and pushable.command != None:
+                        self.robotcommand = pushable.command
+                        self.pushablecoordsx = pushable.coordsx
+                        self.pushablecoordsy = pushable.coordsy
+                        if self.robotcommand == "function":
+                            frame3 = pushable.frame3
             if self.robotcommand == None:
                 if depth == 1:
                     self.state = "idle"
@@ -727,23 +639,24 @@ class ProgramHeader:
                     startval += 1
             if self.robotcommand == "function":
                 for pushable2 in pushables:
-                    if pushable2.frame == 11:
-                        if pushable2.frame3 == frame3:
-                            if pushable2.dir == 0:
-                                pushablexdir = 1
-                                pushableydir = 0
-                            if pushable2.dir == 90:
-                                pushablexdir = 0
-                                pushableydir = -1
-                            if pushable2.dir == -90:
-                                pushablexdir = 0
-                                pushableydir = 1
-                            if pushable2.dir == 180:
-                                pushablexdir = -1
-                                pushableydir = 0
-                            self.findblock(pushable2.coordsx, pushable2.coordsy, pushablexdir, pushableydir, pushables, depth + 1)
+                    if not isinstance(pushable2, Laser):
+                        if pushable2.frame == 11:
+                            if pushable2.frame3 == frame3:
+                                if pushable2.dir == 0:
+                                    pushablexdir = 1
+                                    pushableydir = 0
+                                if pushable2.dir == 90:
+                                    pushablexdir = 0
+                                    pushableydir = -1
+                                if pushable2.dir == -90:
+                                    pushablexdir = 0
+                                    pushableydir = 1
+                                if pushable2.dir == 180:
+                                    pushablexdir = -1
+                                    pushableydir = 0
+                                self.findblock(pushable2.coordsx, pushable2.coordsy, pushablexdir, pushableydir, pushables, depth + 1)
             #Failsafe
-            if self.totaltimes >= 300:
+            if self.totaltimes >= 600:
                 self.state = "idle"
     def updaterobots(self, pushables, robots):
         self.currenttimes = 1
@@ -802,6 +715,7 @@ class Gate:
 
 class Flash:
     def __init__(self, coordsx, coordsy, w, h, tilesx, tilesy, color):
+        pygame.mixer.Sound("robotmove.wav").play()
         self.coordsx = coordsx
         self.coordsy = coordsy
         self.w = w
@@ -999,9 +913,70 @@ class LevelUnlock:
             if self.minlevel <= level - FIRSTLEVELNUM + 1 <= self.maxlevel:
                 self.currentlevels += 1
         if self.currentlevels >= self.totallevels and not isanim:
+            if self.aniframes == 0:
+                pygame.mixer.Sound("explosion.wav").play()
             self.aniframes += 1
 
 
     def update(self, screen, completedlevels, isanim = True):
         self.updatenumber(completedlevels, isanim)
         self.render(screen)
+
+
+class Laser:
+    def __init__(self, coordsx, coordsy, w, h, tilesx, tilesy, image, direction):
+        self.coordsx = coordsx
+        self.coordsy = coordsy
+        self.w = w
+        self.h = h
+        self.tilesx = tilesx
+        self.tilesy = tilesy
+        self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)
+        self.image = image
+        self.spritesheet = SpriteSheet(self.image)
+        self.shooter = self.spritesheet.get_sprite(0, 32, 32, self.w, self.h)
+        self.direction = direction
+        self.shooter = pygame.transform.rotate(self.shooter, self.direction + 180)
+        self.shooter.set_colorkey([0,0,0])
+        self.beam = self.spritesheet.get_sprite(1, 32, 32, self.w, self.h)
+        self.beam = pygame.transform.rotate(self.beam, direction)
+        self.beam.set_colorkey([0,0,0])
+        self.dx = math.cos(math.radians(self.direction)) * self.w
+        self.dy = -math.sin(math.radians(self.direction)) * self.h
+        self.aniframes = 0
+
+    def render(self, screen, walls, pushables, player, robots):
+        screen.blit(self.shooter, self.rect)
+        blockables = walls + pushables
+        self.checkrect = self.rect.copy()
+        ischecking = True
+        while ischecking:
+            self.checkrect.centerx += self.dx
+            self.checkrect.centery += self.dy
+            self.destroy(player, robots)
+            if self.checkrect.x > WIDTH or self.checkrect.x < 0 or self.checkrect.y > HEIGTH or self.checkrect.y < 0:
+                ischecking = False
+            else:
+                for blockable in blockables:
+                    if self.checkrect.colliderect(blockable.rect):
+                        ischecking = False
+            if ischecking:
+                screen.blit(self.beam, self.checkrect)
+    def destroy(self, player, robots):
+        self.destroyrect = pygame.rect.Rect(0, 0, self.w * 0.5, self.h * 0.5)
+        self.destroyrect.center = self.checkrect.center
+        if player != None:
+            if self.destroyrect.colliderect(player.rect):
+                player.coordsx = -20
+                player.coordsy = -67
+        for robot in robots:
+            if self.destroyrect.colliderect(robot.rect):
+                robots.remove(robot)
+
+    def move(self, xvel, yvel):
+        self.coordsx += xvel
+        self.coordsy += yvel
+
+    def update(self, screen, walls, pushables, player, robots):
+        self.render(screen, walls, pushables, player, robots)
+        self.rect = pygame.rect.Rect(self.coordsx * WIDTH / self.tilesx, self.coordsy * HEIGTH / self.tilesy, self.w, self.h)

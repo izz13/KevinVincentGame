@@ -1,6 +1,6 @@
 import pygame
 from grid import Grid
-from player import Player, Flag, Wall, Pushable, Door, Robot, ProgramHeader, Gate, Function, LevelBlock, LevelChange, LevelUnlock
+from player import Player, Flag, Wall, Pushable, Door, Robot, ProgramHeader, Gate, Function, LevelBlock, LevelChange, LevelUnlock, Laser
 import level
 from ui import Button, text, Slider
 from particle import Particle
@@ -17,15 +17,13 @@ fps = 60
 dt = 0
 controls = 0
 
-
+playerimage = "boy.png"
 
 def checkcrush(object, doors):
    for door in doors:
        if object.coordsx == door.coordsx and object.coordsy == door.coordsy and door.frame == 1:
            return True
    return False
-
-
 
 
 def generatelevel(index):
@@ -47,7 +45,7 @@ def generatelevel(index):
        for n in range(tilesx):
            currenttile = currentlevel[i][n]
            if currenttile == 1:
-               player = Player(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "boy.png")
+               player = Player(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, playerimage)
            elif currenttile == 2:
                flag = Flag(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "Flag.png")
            elif currenttile == 3:
@@ -116,12 +114,16 @@ def generatelevel(index):
                    levelchanges.append(LevelChange(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "levelchange.png", {"up":90, "down":-90, "right":0, "left":180}[currenttile[1]], currenttile[2]))
                if currenttile[0] == "levelunlock":
                    levelunlocks.append(LevelUnlock(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "levelunlock.png", currenttile[1], currenttile[2], currenttile[3]))
-
-
-
-
-
-
+               if currenttile[0] == "laser":
+                    if currenttile[1] == "up":
+                        dir = 90
+                    elif currenttile[1] == "down":
+                        dir = -90
+                    elif currenttile[1] == "left":
+                        dir = 180
+                    elif currenttile[1] == "right":
+                        dir = 0
+                    pushables.append(Laser(n, i, WIDTH / tilesx, HEIGTH / tilesy, tilesx, tilesy, "laser.png", dir))
    return [tilesx, tilesy, grid, player, flag, walls, pushables, doors, robots, gates, levelblocks, levelchanges, levelunlocks]
 
 
@@ -166,6 +168,8 @@ def anim(newlevelnum, screen):
                            pushables.append(ProgramHeader(pushattr[0], pushattr[1], pushattr[2], pushattr[3], pushattr[4], pushattr[5], pushattr[6], pushattr[7], pushattr[8], pushattr[9], pushattr[10]))
                        elif pushattr[-1] == "Function":
                            pushables.append(Function(pushattr[0], pushattr[1], pushattr[2], pushattr[3], pushattr[4], pushattr[5], pushattr[6], pushattr[7], pushattr[8], pushattr[9], pushattr[10], pushattr[11]))
+                       elif pushattr[-1] == "Laser":
+                           pushables.append(Laser(pushattr[0], pushattr[1], pushattr[2], pushattr[3], pushattr[4], pushattr[5], pushattr[6], pushattr[7]))
 
 
                    undorobotattr = undoframe["robots"]
@@ -252,11 +256,11 @@ for i in range(FIRSTLEVELNUM):
 gridstatetracker = 0
 
 
-startbutton = Button(375, 375, 567, 67, 0.5, 0.95, "Button.png", "placeholder", "Start Game")
-charactercustombutton = Button(375, 450, 567, 67, 0.5, 0.95, "Button.png", "placeholder", "Character Select")
-cutscenebutton = Button(WIDTH//2,HEIGTH//2 , WIDTH, HEIGTH, 0.5, 0.95, "Button.png", "placeholder", "Next Cutscene")
-levelselectbutton = Button(WIDTH // 2, HEIGTH // 2 + 75, 300, 50, 0.5, 0.95, "Button.png", "placeholder", "Level Select")
-exitbutton = Button(WIDTH // 2, HEIGTH // 2 + 150, 100, 50, 0.5, 0.95, "Button.png", "placeholder", "Exit")
+startbutton = Button(375, 375, 567, 67, "Start Game")
+charactercustombutton = Button(375, 450, 567, 67, "Character Select")
+cutscenebutton = Button(WIDTH//2,HEIGTH//2 , WIDTH, HEIGTH,"Next Cutscene")
+levelselectbutton = Button(WIDTH // 2, HEIGTH // 2 + 75, 300, 50,  "Level Select")
+exitbutton = Button(WIDTH // 2, HEIGTH // 2 + 150, 100, 50, "Exit")
 
 
 
@@ -266,8 +270,8 @@ boyimg = pygame.image.load("boy.png")
 csimg = pygame.image.load("cs.png")
 girlimg = pygame.image.load("girl.png")
 csimg = pygame.transform.scale(csimg, [WIDTH, HEIGTH])
-leftbutton = Button(WIDTH/2, HEIGTH*0.75, 100, 50, 0.5, 0.95, "Button.png", "placeholder", "<--")
-rightbutton = Button(WIDTH/1.5, HEIGTH*0.75, 100, 50, 0.5, 0.95, "Button.png", "placeholder", "-->")
+leftbutton = Button(WIDTH/2, HEIGTH*0.75, 100, 50, "<--")
+rightbutton = Button(WIDTH/1.5, HEIGTH*0.75, 100, 50, "-->")
 pastgamestate = "startmenu"
 brightsurface = pygame.surface.Surface([WIDTH, HEIGTH], pygame.SRCALPHA)
 winimg = pygame.image.load("wintext.png")
@@ -282,10 +286,35 @@ for filename in ["Cut1.png", "Cut2.png", "Cut3.png"]:
    cutsceneimages.append(image)
 
 
+def stopall():
+    mainmusic.stop()
+    cutmusic.stop()
+    csmusic.stop()
+    gamemusic.stop()
+
 cutsceneframe = 0
 
+isplayed = False
+mainmusic = pygame.mixer.Sound("light_puzzles_13.ogg")
+cutmusic = pygame.mixer.Sound("caravan.ogg.ogg")
+csmusic = pygame.mixer.Sound("piano-03.mp3")
+gamemusic = pygame.mixer.Sound("electronic_escape.mp3")
+pastmusicgamestate = None
 
 while isrunning:
+   if pastmusicgamestate != gamestate:
+       pastmusicgamestate = gamestate
+       stopall()
+       if pastmusicgamestate == "startmenu":
+           mainmusic.play(-1)
+       elif pastmusicgamestate == "cutscene":
+           cutmusic.play(-1)
+       elif pastmusicgamestate == "cs":
+           csmusic.play(-1)
+       elif pastmusicgamestate == "game":
+           gamemusic.play(-1)
+
+
    pygame.display.set_icon(pygame.image.load("Player.png"))
    if gamestate == "startmenu":
        screen.fill([150, 150, 150])
@@ -305,7 +334,6 @@ while isrunning:
                cutsceneframe += 1
        else:
            gamestate = "game"
-   #Player(self.coordsx, self.coordsy, self.w, self.h, self.tilesx, self.tilesy, None)
    elif gamestate == "game":
            screen.fill([100, 100, 100])
            grid.render(screen)
@@ -330,23 +358,28 @@ while isrunning:
                    wall.render(screen, walls)
            if pushables != []:
                for pushable in pushables:
-                   if str(type(pushable)) == "<class 'player.ProgramHeader'>":
+                   if isinstance(pushable, ProgramHeader):
                        pushable.update(screen, pushables, robots)
+                   elif isinstance(pushable, Laser):
+                       pushable.update(screen, walls, pushables, player, robots)
                    else:
-                        pushable.update(screen)
+                       pushable.update(screen)
                    if checkcrush(pushable, doors):
+                       pygame.mixer.Sound("explosion.wav").play()
                        pushables.remove(pushable)
                for pushable in pushables:
-                   if pushable.frame == 4:
-                       if pushable.flashlist != []:
-                           for flash in pushable.flashlist:
-                               flash.update(screen)
-                               if flash.aniframes > 15:
-                                   pushable.flashlist.remove(flash)
+                   if not isinstance(pushable, Laser):
+                       if pushable.frame == 4:
+                           if pushable.flashlist != []:
+                               for flash in pushable.flashlist:
+                                   flash.update(screen)
+                                   if flash.aniframes > 15:
+                                       pushable.flashlist.remove(flash)
            if robots != []:
                for robot in robots:
                    robot.update(screen, walls, pushables, doors, player, robots, gates, levelunlocks)
                    if checkcrush(robot, doors):
+                       pygame.mixer.Sound("explosion.wav").play()
                        robots.remove(robot)
            for pushable in pushables:
                if str(type(pushable)) == "<class 'player.ProgramHeader'>":
@@ -383,7 +416,9 @@ while isrunning:
                else:
                    player.render(screen)
                if checkcrush(player, doors):
-                   player = None
+                   pygame.mixer.Sound("explosion.wav").play()
+                   player.coordsx = -20
+                   player.coordsy = -67
 
 
            if gates != []:
@@ -440,6 +475,8 @@ while isrunning:
                                pushables.append(ProgramHeader(pushattr[0], pushattr[1], pushattr[2], pushattr[3], pushattr[4], pushattr[5], pushattr[6], pushattr[7], pushattr[8], pushattr[9], pushattr[10]))
                            elif pushattr[-1] == "Function":
                                pushables.append(Function(pushattr[0], pushattr[1], pushattr[2], pushattr[3], pushattr[4], pushattr[5], pushattr[6], pushattr[7], pushattr[8], pushattr[9], pushattr[10], pushattr[11]))
+                           elif pushattr[-1] == "Laser":
+                               pushables.append(Laser(pushattr[0], pushattr[1], pushattr[2], pushattr[3], pushattr[4], pushattr[5], pushattr[6], pushattr[7]))
 
 
                        undorobotattr = undoframe["robots"]
@@ -514,6 +551,8 @@ while isrunning:
                        pastpushables.append([pushable.coordsx, pushable.coordsy, pushable.w, pushable.h, pushable.tilesx, pushable.tilesy, pushable.ogspritesheet, pushable.frame, pushable.frame2, pushable.dir, pushable.color, "ProgramHeader"])
                    elif isinstance(pushable, Function):
                        pastpushables.append([pushable.coordsx, pushable.coordsy, pushable.w, pushable.h, pushable.tilesx, pushable.tilesy, pushable.ogimage, pushable.frame, pushable.frame2, pushable.frame3, pushable.command, pushable.dir, "Function"])
+                   elif isinstance(pushable, Laser):
+                       pastpushables.append([pushable.coordsx, pushable.coordsy, pushable.w, pushable.h, pushable.tilesx, pushable.tilesy, pushable.image, pushable.direction, "Laser"])
                     
 
                pastdoors = []
@@ -532,7 +571,7 @@ while isrunning:
                    "walls": walls,
                    "pushables": pastpushables,
                    "robots": pastrobots,
-                   "player": [player.coordsx, player.coordsy, player.w, player.h, player.tilesx, player.tilesy, player.images, [player.gridx, player.gridy]],
+                   "player": [player.coordsx, player.coordsy, player.w, player.h, player.tilesx, player.tilesy, playerimage, [player.gridx, player.gridy]],
                    "gates": gates,
                    "gridsize" : [grid.tilesx, grid.tilesy],
                    "levelblocks" : levelblocks,
@@ -560,7 +599,7 @@ while isrunning:
                            for n in range(10):
                                 particles.append(Particle(particlex, particley, 5, 5, random.randint(0, 360), 0.9,
                                                  random.randint(5, 20)))
-                       #pygame.mixer.Sound("Winsound.wav").play()
+                       pygame.mixer.Sound("Winsound.wav").play()
 
 
            if pygame.key.get_just_pressed()[pygame.K_e] and not isanim and levelnumber >= FIRSTLEVELNUM:
@@ -608,7 +647,7 @@ while isrunning:
        text(WIDTH / 2, 50, 250, 75, "Settings", [255, 255, 255], screen)
        text(382, 257, 125, 35, "Brightness", [255, 255, 255], screen)
        brightslider.update(screen)
-       controlButton = Button(WIDTH // 2, HEIGTH // 2, 200, 50, 0.5, 0.95, "Button.png", "placeholder", ["arrow", "wasd"][int(controls)])
+       controlButton = Button(WIDTH // 2, HEIGTH // 2, 200, 50, ["arrow", "wasd"][int(controls)])
        controlButton.update(screen)
        exitbutton.update(screen)
        levelselectbutton.update(screen)
@@ -623,6 +662,7 @@ while isrunning:
            gamestate = pastgamestate
        if exitbutton.checkcollisions():
            gamestate = "startmenu"
+           mainmusic.play(-1)
        if pygame.key.get_just_pressed()[pygame.K_ESCAPE]:
            gamestate = pastgamestate
 
@@ -630,16 +670,20 @@ while isrunning:
        mouse = pygame.mouse.get_pos()
        screen.fill([100, 100, 100])
        screen.blit(csimg, [0, 0])
-       playerimg = player.frontImage.copy()
-       playerimg = pygame.transform.scale(playerimg, [200, 200])
+       displayimg = player.frontImage.copy()
+       displayimg = pygame.transform.scale(displayimg, [200, 200])
 
-       screen.blit(playerimg, [50, 300])
+       screen.blit(displayimg, [50, 300])
        rightbutton.update(screen)
        leftbutton.update(screen)
        if rightbutton.checkcollisions():
-           player.setimgs("right")
+           playerimage = "boy.png"
+           player.image = playerimage
+           player.updateimage()
        if leftbutton.checkcollisions():
-           player.setimgs("left")
+           playerimage = "girl.png"
+           player.image = playerimage
+           player.updateimage()
 
 
 
@@ -660,10 +704,4 @@ while isrunning:
 
 
 
-
-
-
-
-
 pygame.quit()
-

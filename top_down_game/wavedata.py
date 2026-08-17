@@ -1,0 +1,105 @@
+import classes, mods
+
+wave1 = [
+    ["bandit", -529, -358 + 640],
+    ["bandit", -529, -496 + 640],
+    ["bandit", 1563, -568 + 640],
+    ["bandit", 1566, -414 + 640],
+    ["sensai", 1566, -414 + 640]
+]
+
+wave2 = [
+    ["bandit", 206, 1225],
+    ["bandit", 270, 1234],
+    ["bandit", 342, 1252],
+    ["bandit", 422, 1252],
+    ["bandit", 70, -647],
+    ["bandit", 134, -647],
+    ["bandit", 222, -638],
+    ["bandit", 302, -638],
+    ["fast bandit", 222, 1180],
+    ["fast bandit", 310, 1180],
+    ["fast bandit", 366, 1162],
+    ["fast bandit", 110, -548],
+    ["fast bandit", 222, -548],
+    ["fast bandit", 302, -530],
+]
+
+wave3 = [
+    ["fast bandit", -97, -603],
+    ["fast bandit", 52, -603],
+    ["fast bandit", 396, -612],
+    ["fast bandit", 690, -612],
+    ["fast bandit", 1537, -12],
+    ["fast bandit", 1552, 204],
+    ["fast bandit", 1568, 618],
+    ["fast bandit", 1360, 1306],
+    ["fast bandit", 1086, 1306],
+    ["fast bandit", 40, 1306],
+]
+
+wave4 = [
+    ["archer bandit", 406, -789],
+    ["archer bandit", 86, -771],
+    ["archer bandit", 838, -780],
+    ["fast bandit", 494, -636],
+    ["fast bandit", 494, -636],
+    ["fast bandit", 494, -636],
+    ["fast bandit", 494, -636],
+    ["bandit", 486, -519],
+    ["bandit", 486, -519],
+    ["bandit", 486, -519],
+    ["bandit", 486, -519],
+    ["bandit", 486, -519],
+    ["bandit", 486, -519],
+]
+
+wave5 = [
+    ["poisoner", 406, -789],
+    ["poisoner", 86, -771],
+    ["poisoner", 838, -780],
+    ["fast bandit", 494, -636],
+    ["bandit", 486, -519],
+    ["bandit", 486, -519],
+]
+
+wave6 = [
+    ["poisoner", 406, -789 * 3],
+    ["poisoner", 406, -789 * 3],
+    ["poisoner", 406, -789 * 3],
+    ["poisoner", 406, -789 * 3],
+    ["poisoner", 406, -789 * 3],
+    ["poisoner", 406, -789 * 3],
+    ["poisoner", 406, -789 * 3],
+    ["poisoner", 406, -789 * 3],
+    ["poisoner", 406, -789 * 3],
+    ["poisoner", 406, -789 * 3],
+    ["poisoner", 406, -789 * 3],
+    ["poisoner", 406, -789 * 3],
+    ["bandit", 486, 819],
+    ["bandit", 486, 819],
+
+]
+
+
+waves = [wave1, wave2, wave3, wave4, wave5, wave6]
+
+#waves = [wave6]
+
+for i in range(len(waves)):
+    for n in range(len(waves[i])):
+        waves[i][n] = {
+            "bandit" : classes.Enemy(waves[i][n][1], waves[i][n][2], 60, 90, "enemy_bandit.png", hp=400, spd=150, dmg=6, atkspd=3, cost=3),
+            "fast bandit": classes.Enemy(waves[i][n][1], waves[i][n][2], 60, 90, "fastbandit.png", hp=250, spd=250, dmg=4, atkspd=6, cost=4),
+            "archer bandit": classes.Enemy(waves[i][n][1], waves[i][n][2], 60, 90, "archer.png", hp=150, spd=150, dmg=3, atkspd=3, cost=6, mods=[mods.Ranged]),
+            "poisoner": classes.Enemy(waves[i][n][1], waves[i][n][2], 60, 90, "poisoner.png", hp=150, spd=150, dmg=3, atkspd=3, cost=6, mods=[mods.Poisoner]),
+            "sensai": classes.Enemy(waves[i][n][1], waves[i][n][2], 60, 90, "AngrySensai.png", hp=3000, spd=50, dmg=50, atkspd=10, cost=50, mods=[mods.Sensai]),
+             }[waves[i][n][0]]
+
+
+def summon(wavenum):
+    enemies = []
+    currentwave = waves[wavenum]
+    for enemy in currentwave:
+        enemies.append(enemy)
+    return enemies

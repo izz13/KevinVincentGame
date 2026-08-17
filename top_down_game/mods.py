@@ -1,0 +1,627 @@
+import pygame, random, math, classes, constants
+pygame.init()
+
+
+#PROJECTILE
+class Lifetime:
+    shopimage = "lifetime.png"
+    maxlevel = 3
+    def __init__(self, projectile, level):
+        self.projectile = projectile
+        self.projectile.lifetime += 0.25
+        self.level = level
+
+    def update(self):
+        pass
+    def renderunder(self):
+        pass
+    def renderover(self):
+        pass
+
+class Sharptip:
+    shopimage = "sharp.png"
+    def __init__(self, projectile, level):
+        self.projectile = projectile
+        self.projectile.dmg += 22
+        self.projectile.manacost += 3
+        self.level = level
+
+    def update(self):
+        pass
+    def renderunder(self):
+        pass
+    def renderover(self):
+        pass
+
+
+class Poisontip:
+    shopimage = "poison.png"
+    maxlevel = 9
+    def __init__(self, projectile, level):
+        self.projectile = projectile
+        self.projectile.manacost += 3.5
+        self.level = level
+
+    def update(self):
+        for enemy in self.projectile.collidables:
+            if self.projectile.rect.colliderect(enemy.rect):
+                if not enemy in self.projectile.alreadycollide:
+                    enemy.mods.append(StatusPoison(enemy, 52))
+
+
+
+    def renderunder(self):
+        pass
+
+    def renderover(self):
+        pass
+
+class GoldenArrow:
+    shopimage = "GoldenArrow.png"
+    maxlevel = 9
+
+
+
+
+    def __init__(self, projectile, level):
+        self.projectile = projectile
+        self.level = level
+        self.projectile.manacost += 1.5
+        self.firetrail = []
+
+
+    def update(self):
+        self.pvel = pygame.math.Vector2(0, 0.5)
+        self.pvel.rotate_ip(random.randint(0, 359))
+        self.firetrail.append(FireProjectile(self.projectile.pos[0] + self.projectile.w / 2, self.projectile.pos[1] + self.projectile.h / 2, self.pvel))
+        for particle in self.firetrail:
+            particle.update(self.projectile.camerapos, self.projectile.screen, self.projectile.dt)
+            if particle.age >= 0.5:
+                self.firetrail.remove(particle)
+            for collidable in self.projectile.collidables:
+                if particle.rect.colliderect(collidable.rect):
+                    collidable.hurt(10 * self.projectile.dt)
+
+    def renderunder(self):
+        pass
+    def renderover(self):
+        pass
+
+
+
+#PLAYER
+
+class OrbitalStrike:
+    shopimage = "radarShop.png"
+    maxlevel = 1
+    def __init__ (self, player, level):
+        self.mapimg = pygame.image.load("radar.png")
+        self.mapimg = pygame.transform.scale(self.mapimg, [200, 200])
+        self.player = player
+        self.imgcords = [constants.SCREENWIDTH - 200, 0]
+        self.level = level
+        self.radarRect = self.mapimg.get_rect(topleft=self.imgcords)
+        self.state = "idle"
+        self.anitime = 0
+
+
+
+
+    def strike(self):
+        if pygame.mouse.get_just_pressed()[0] and self.radarRect.collidepoint(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]) and self.state == "idle":
+            self.nukex = (pygame.mouse.get_pos()[0] - 708) / 0.125 + 444
+            self.nukey = (pygame.mouse.get_pos()[1] - 118) / 0.15625 + 439
+            self.nukeimage = pygame.transform.scale(pygame.image.load("OrbitalStrikeBomb.png"), [150, 150])
+            self.nukeimage.set_colorkey([0, 0, 0])
+            self.ogcloudimg = pygame.image.load("mushroomCloud.png")
+            self.rect = self.nukeimage.get_rect(center=[self.nukex, self.nukey])
+
+            self.totalcost = 0
+            self.newprojectiles = []
+            for i in range(5):
+                self.shootangle = pygame.math.Vector2(0, 1)
+                self.shootangle.rotate_ip(360 * i / 5)
+                self.newprojectile = classes.Projectile(self.nukex, self.nukey, 30, 20, "playerprojectile.png", self.shootangle, 300, 60, self.player.pmods)
+                self.totalcost += self.newprojectile.manacost
+                self.newprojectiles.append(self.newprojectile)
+            if self.player.mana >= self.totalcost:
+                self.state = "nuking"
+
+        if self.state == "nuking":
+            self.player.screen.blit(self.nukeimage, self.rect.topleft - self.player.camerapos)
+            self.anitime += self.player.dt
+            if self.anitime >= 0.5:
+                self.anitime = 0
+                self.state = "exploding"
+                self.player.projectiles += self.newprojectiles
+                self.player.mana -= self.totalcost
+
+        if self.state == "exploding":
+            self.anitime += self.player.dt
+            self.mushroomcloud = pygame.transform.scale(self.ogcloudimg, [self.anitime / 0.5 * 200, self.anitime / 0.5 * 200])
+            self.mushroomcloud.set_colorkey([0, 0, 0])
+            self.mushroomcloudrect = self.mushroomcloud.get_rect(center=[self.nukex, self.nukey])
+            self.player.screen.blit(self.mushroomcloud, self.mushroomcloudrect.topleft - self.player.camerapos)
+            if self.anitime >= 0.5:
+                self.anitime = 0
+                self.state = "idle"
+
+    def update(self):
+        self.player.screen.blit(self.mapimg, self.imgcords)
+        #1192, -389
+        #707 103
+        pygame.draw.circle(self.player.screen, [0, 255, 255], ((self.player.pos[0] - 444) * 0.125 + 708, (self.player.pos[1] - 439) * 0.15625 + 118), 4)
+        for enemy in self.player.enemies:
+            pygame.draw.circle(self.player.screen, [255, 0, 0], ((enemy.pos[0] - 444) * 0.125 + 708, (enemy.pos[1] - 439) * 0.15625 + 118), 4)
+        self.strike()
+
+    def renderunder(self):
+        pass
+    def renderover(self):
+        pass
+
+class Heal:
+    shopimage = "heal.png"
+    maxlevel = 9
+    def __init__(self, player, level):
+        self.player = player
+        self.level = level
+
+    def update(self):
+        self.player.hp += 2.5 * self.player.dt
+
+    def renderunder(self):
+        pass
+    def renderover(self):
+        pass
+
+class Antiheal:
+    shopimage = "antiheal.png"
+    maxlevel = 9
+    def __init__(self, player, level):
+        self.player = player
+        self.level = level
+
+    def update(self):
+        if pygame.key.get_pressed()[pygame.K_c]:
+            self.player.hp -= 30 * self.player.dt
+            self.player.mana += 20 * self.player.dt
+
+    def renderunder(self):
+        pass
+    def renderover(self):
+        pass
+
+class Teleport:
+    shopimage = "teleportanchor.png"
+    maxlevel = 3
+    def __init__(self, player, level):
+        self.player = player
+        self.state = "inactive"
+        self.cooldown = 0
+        self.direction = 0
+        self.scale = 125
+        self.ogimage = pygame.image.load("teleportanchor.png")
+        self.ogimage = pygame.transform.scale(self.ogimage, [100, 100])
+        self.ogimage.set_colorkey([0, 0, 0])
+        self.pos = [0, 0]
+        self.rect = self.ogimage.get_rect(center = self.pos)
+        self.aniframes = 0
+        self.level = level
+
+
+    def update(self):
+        if pygame.key.get_just_pressed()[pygame.K_v] and self.state == "inactive" and self.cooldown <= 0 and self.player.mana >= 50:
+            self.pos = self.player.pos.copy()
+            self.state = "active"
+            self.player.mana -= 50
+        if self.state == "active":
+            if pygame.key.get_just_pressed()[pygame.K_b]:
+                self.player.pos = self.pos
+                self.state = "inactive"
+                self.cooldown = 10
+        self.direction += 60 * self.player.dt
+        self.direction = self.direction % 360
+        self.weight = 0.5 * math.sin(self.aniframes) + 0.5
+        self.scale = pygame.math.lerp(100, 150, self.weight)
+        self.cooldown -= self.player.dt
+        self.aniframes += self.player.dt
+
+
+    def renderunder(self):
+        if self.state == "active":
+            self.image = pygame.transform.rotate(self.ogimage, self.direction)
+            self.image = pygame.transform.scale(self.image, [self.scale, self.scale])
+            self.rect = self.image.get_rect(center=self.pos)
+            self.player.screen.blit(self.image, self.rect.topleft - self.player.camerapos)
+            self.player.mana -= 3 * self.player.dt
+    def renderover(self):
+        pass
+
+class Morehealth:
+    shopimage = "morehealth.png"
+    maxlevel = 9
+    def __init__(self, player, level):
+        self.player = player
+        self.level = level
+    def update(self):
+        self.player.maxhp += 25
+    def renderunder(self):
+        pass
+    def renderover(self):
+        pass
+
+class Radiation:
+    shopimage = "radiationicon.png"
+    maxlevel = 9
+    def __init__(self, player, level):
+        self.player = player
+        self.level = level
+        self.img = pygame.image.load("radiationglow.png")
+        self.img = pygame.transform.scale(self.img, [200, 200])
+        self.img.set_colorkey([0,0,0])
+        self.rect = self.img.get_rect()
+
+    def update(self):
+        for enemy in self.player.enemies:
+            if enemy.rect.colliderect(self.rect):
+                enemy.hurt(75 * self.player.dt)
+    def renderunder(self):
+        self.rect.center = self.player.pos
+        self.player.screen.blit(self.img, self.rect.topleft - self.player.camerapos)
+    def renderover(self):
+        pass
+
+class SecondLife:
+    shopimage = "secondlifeicon.png"
+    maxlevel = 3
+    def __init__(self, player, level):
+        self.player = player
+        self.level = level
+        self.used = False
+        self.anitime = 0
+        self.ogimage = pygame.image.load("secondlifeparticle.png")
+
+
+    def update(self):
+        self.player.maxhp = math.ceil(self.player.maxhp * 0.75)
+        if self.player.hp <= 0 and not self.used:
+            self.used = True
+            self.player.hp = 0.5 * self.player.maxhp
+        if self.used and len(self.player.enemies) == 0:
+            self.used = False
+            self.anitime = 0
+
+    def renderover(self):
+        if self.used and self.anitime <= 1:
+            self.image = pygame.transform.scale(self.ogimage, [self.anitime * 400, self.anitime * 400])
+            self.image.set_colorkey([0, 0, 0])
+            self.image.set_alpha(255 - self.anitime * 255)
+            self.rect = self.image.get_rect(center=self.player.rect.center)
+            self.player.screen.blit(self.image, self.rect.topleft - self.player.camerapos)
+            self.anitime += self.player.dt
+            for enemy in self.player.enemies:
+                if self.rect.colliderect(enemy.rect):
+                    enemy.hurt(500 * self.player.dt)
+                    repulseforce = enemy.pos - self.player.pos
+                    repulseforce.normalize_ip()
+                    repulseforce *= 600 * self.player.dt
+                    enemy.pos += repulseforce
+
+
+    def renderunder(self):
+        pass
+
+#MANA
+class Managamble:
+    shopimage = "managamble.png"
+    maxlevel = 9
+    def __init__(self, player, level):
+        self.player = player
+        self.cooldown = 0
+        self.duration = 5
+        self.state = "idle"
+        self.manamultiplier = 1
+        self.level = level
+
+    def update(self):
+        self.player.manaregenmultiplier *= self.manamultiplier
+        if self.state == "idle":
+            self.cooldown -= self.player.dt
+            if self.cooldown <= 0 and pygame.key.get_just_pressed()[pygame.K_z]:
+                self.state = "active"
+                self.cooldown = 8.5
+                if self.player.manaregenmultiplier == 1:
+                    if random.randint(1,2) == 1:
+                        self.manamultiplier = 2
+                    else:
+                        self.manamultiplier = 1 / 2
+                elif self.player.manaregenmultiplier > 1:
+                    self.manamultiplier = 2
+                else:
+                    self.manamultiplier = 1 / 2
+        if self.state == "active":
+            self.duration -= self.player.dt
+            if self.duration <= 0:
+                self.state = "idle"
+                self.duration = 5
+                self.manamultiplier = 1
+
+
+
+    def renderunder(self):
+        pass
+    def renderover(self):
+        pass
+
+class Manaburst:
+    shopimage = "manaburst.png"
+    maxlevel = 9
+    def __init__(self, player, level):
+        self.player = player
+        self.duration = 10
+        self.cooldown = 0
+        self.state ="inactive"
+        self.level = level
+
+    def update(self):
+        self.cooldown -= self.player.dt
+        if pygame.key.get_just_pressed()[pygame.K_x] and self.cooldown <= 0 and self.state == "inactive":
+            self.duration = 10
+            self.state = "increase"
+        if self.state == "increase":
+            self.player.mana += 6 * self.player.dt
+            self.duration -= self.player.dt
+            if self.duration <= 5:
+                self.state = "decrease"
+        if self.state == "decrease":
+            self.duration -= self.player.dt
+            self.player.mana -= 6 * self.player.dt
+            if self.duration <= 0:
+                self.state = "inactive"
+                self.cooldown = 15
+
+
+
+    def renderunder(self):
+        pass
+    def renderover(self):
+        pass
+
+class Managain:
+    shopimage = "managain.png"
+    maxlevel = 9
+    def __init__(self, player, level):
+        self.player = player
+        self.level = level
+
+    def update(self):
+        self.player.mana += 3 * self.player.dt * self.player.manaregenmultiplier
+
+    def renderunder(self):
+        pass
+    def renderover(self):
+        pass
+
+class Moremana:
+    shopimage = "moremana.png"
+    maxlevel = 9
+    def __init__(self, player, level):
+        self.player = player
+        self.level = level
+    def update(self):
+        self.player.maxmana += 25
+    def renderunder(self):
+        pass
+    def renderover(self):
+        pass
+
+#STATUS
+class StatusPoison:
+    def __init__(self, target, dps):
+        self.target = target
+        self.dps = dps
+        self.duration = 6.7
+        self.total = 6.7
+
+
+    def update(self):
+        self.target.hp -= self.dps / self.total * self.target.dt
+        self.duration -= self.target.dt
+        if self.duration <= 0:
+            self.target.mods.remove(self)
+
+    def renderunder(self):
+        pass
+    def renderover(self):
+        pass
+
+#ENEMY MODS
+class Ranged:
+    def __init__(self, enemy):
+        self.enemy = enemy
+        self.projectiles = []
+        self.time = random.uniform(0, 1.75)
+        self.targetpos = pygame.math.Vector2(0, 1)
+
+    def update(self):
+        self.movetime = math.dist(self.enemy.pos, self.enemy.player.pos) / 300
+        self.targetpos = self.enemy.player.pos + self.enemy.player.direction * self.enemy.player.speed
+        if self.time >= 1.75:
+            self.time = 0
+            self.newprojectile = classes.Projectile(self.enemy.pos[0], self.enemy.pos[1], 50, 25, "archerProjectile.png", self.targetpos - self.enemy.pos, 300, 5)
+            self.newprojectile.lifetime = 2
+            self.projectiles.append(self.newprojectile)
+        for projectile in self.projectiles:
+            projectile.update(self.enemy.player, self.enemy.dt, self.enemy.camerapos, self.enemy.screen)
+        self.time += self.enemy.dt
+
+    def renderover(self):
+        self.image = pygame.image.load("bow.png")
+        self.image = pygame.transform.scale(self.image, [50, 50])
+        self.image = pygame.transform.rotate(self.image, (pygame.math.Vector2(self.targetpos) - pygame.math.Vector2(self.enemy.pos)).angle_to(pygame.math.Vector2(0, 1)) - 90)
+        self.image.set_colorkey([0, 0, 0])
+        self.imagerect = self.image.get_rect(center=self.enemy.rect.center)
+        self.enemy.screen.blit(self.image, self.imagerect.topleft - self.enemy.camerapos)
+
+    def renderunder(self):
+        pass
+
+class Enemypoison:
+    shopimage = "lifetime.png"
+    maxlevel = 3
+    def __init__(self, projectile, level):
+        self.projectile = projectile
+
+    def update(self):
+        for collidable in [self.projectile.collidables]:
+            if self.projectile.rect.colliderect(collidable.rect):
+                if not collidable in self.projectile.alreadycollide:
+                    collidable.mods.append(StatusPoison(collidable, 10))
+    def renderunder(self):
+        pass
+    def renderover(self):
+        pass
+
+class Poisoner:
+    def __init__(self, enemy):
+        self.enemy = enemy
+        self.projectiles = []
+        self.time = random.uniform(0, 1.75)
+        self.targetpos = pygame.math.Vector2(0, 1)
+
+    def update(self):
+        self.movetime = math.dist(self.enemy.pos, self.enemy.player.pos) / 300
+        self.targetpos = self.enemy.player.pos + self.enemy.player.direction * self.enemy.player.speed
+        if self.time >= 1.75:
+            self.time = 0
+            self.newprojectile = classes.Projectile(self.enemy.pos[0], self.enemy.pos[1], 35, 25, "poisondart.png", self.targetpos - self.enemy.pos, 300, 1, [[Enemypoison, 0]])
+            self.newprojectile.lifetime = 2
+            self.projectiles.append(self.newprojectile)
+        for projectile in self.projectiles:
+            projectile.update(self.enemy.player, self.enemy.dt, self.enemy.camerapos, self.enemy.screen)
+        self.time += self.enemy.dt
+
+    def renderover(self):
+        self.image = pygame.image.load("bow.png")
+        self.image = pygame.transform.scale(self.image, [100, 25])
+        self.image = pygame.transform.rotate(self.image, (pygame.math.Vector2(self.targetpos) - pygame.math.Vector2(self.enemy.pos)).angle_to(pygame.math.Vector2(0, 1)) - 90)
+        self.image.set_colorkey([0, 0, 0])
+        self.imagerect = self.image.get_rect(center=self.enemy.rect.center)
+        self.enemy.screen.blit(self.image, self.imagerect.topleft - self.enemy.camerapos)
+
+    def renderunder(self):
+        pass
+
+class Sensai:
+    def __init__(self, enemy):
+        self.enemy = enemy
+        self.projectiles = []
+        self.time = random.uniform(0, 1.75)
+        self.targetpos = pygame.math.Vector2(0, 1)
+        self.imageVisible = pygame.image.load("AngrySensai.png")
+        self.imageVisible = pygame.transform.scale(self.imageVisible, [60, 90])
+        self.imageInvisible = pygame.Surface([60,90])
+        self.imageInvisible.fill([255, 0, 0])
+        self.imageInvisible.set_colorkey([255,0,0])
+        self.imageVisible.set_colorkey([0, 0, 0])
+        self.image = pygame.image.load("SensaiBossWeapon.png")
+        self.image = pygame.transform.rotate(self.image, 90)
+        self.time = 0
+        self.state = "visible"
+        self.circle = pygame.image.load("Circle.png")
+        self.circleRect = self.circle.get_rect()
+        self.circle = pygame.transform.scale(self.circle, [97, 97])
+        self.visibletime = 0
+
+    def update(self):
+        if self.state == "visible":
+            self.enemy.image = self.imageVisible
+        elif self.state == "invisible":
+            self.enemy.image = self.imageInvisible
+        self.movetime = math.dist(self.enemy.pos, self.enemy.player.pos) / 300
+        self.targetpos = self.enemy.player.pos + self.enemy.player.direction * self.enemy.player.speed
+        if self.time >= 1.75:
+            self.time = 0
+            self.newprojectile = classes.Projectile(self.enemy.pos[0], self.enemy.pos[1], 36, 10, "SensaiBossWeapon.png", self.targetpos - self.enemy.pos, 300, 10)
+            self.newprojectile.lifetime = 2
+            self.projectiles.append(self.newprojectile)
+        for projectile in self.projectiles:
+            projectile.update(self.enemy.player, self.enemy.dt, self.enemy.camerapos, self.enemy.screen)
+        self.attack1()
+        self.time += self.enemy.dt
+        self.visibletime += self.enemy.dt
+
+    def renderover(self):
+        pos = [self.enemy.rect.centerx + 20, self.enemy.rect.centery]
+        self.imagerect = self.image.get_rect(center=pos)
+        self.image = pygame.transform.scale(self.image, [20, 100])
+        if self.state == "visible":
+            self.enemy.screen.blit(self.image, self.imagerect.topleft - self.enemy.camerapos)
+
+
+
+    def renderunder(self):
+        '''circlepos = [self.enemy.rect.centerx, self.enemy.rect.centery]
+        self.circlerect = self.circle.get_rect(center=circlepos)
+        self.enemy.screen.blit(self.circle, self.circlerect.topleft - self.enemy.camerapos)'''
+        pass
+    def attack1(self):
+        if self.visibletime >= 5 and self.state == "visible":
+            print("Changing state")
+            self.state = "invisible"
+            self.enemy.spd *= 4
+            self.visibletime = 0
+        elif self.visibletime >= 5 and self.state == "invisible":
+            self.state = "visible"
+            self.enemy.spd /= 4
+            self.visibletime = 0
+    def attack2(self):
+        pass
+
+#MISC
+class FireProjectile:
+    def __init__(self, x, y, vel):
+        self.x = x
+        self.y = y
+        self.vel = vel
+        self.pos = [self.x, self.y]
+        self.radius = random.randint(2, 6)
+        self.color = [255 + random.randint(-60, 0), 191 + random.randint(-60, 60), 0]
+        self.ashcolor = random.randint(50, 150)
+        self.age = 0
+
+    def render(self, camerapos, screen):
+        pygame.draw.circle(screen, self.color, self.pos - camerapos, self.radius)
+        self.rect = pygame.rect.Rect(0, 0, self.radius * 2, self.radius * 2)
+        self.rect.center = self.pos
+        self.weight = -math.log(-self.age / 0.5 + 1, 200)
+        self.color[0] = pygame.math.lerp(self.color[0], self.ashcolor, self.weight)
+        self.color[1] = pygame.math.lerp(self.color[1], self.ashcolor, self.weight)
+        self.color[2] = pygame.math.lerp(self.color[2], self.ashcolor, self.weight)
+
+
+    def move(self):
+        self.vel *= 0.99
+        self.pos += self.vel
+
+    def update(self, camerapos, screen, dt):
+        self.move()
+        self.render(camerapos, screen)
+        self.age += dt
+
+#UTILS
+def updatemods(self):
+    for mod in self.mods:
+        mod.update()
+def renderunder(self):
+    for mod in self.mods:
+        mod.renderunder()
+def renderover(self):
+    for mod in self.mods:
+        mod.renderover()
+
+
+projectilemods = [Lifetime, Sharptip, Poisontip, GoldenArrow]
+playermods = [Heal, Antiheal, Teleport, Morehealth, Radiation, SecondLife, OrbitalStrike]
+manamods = [Managamble, Manaburst, Managain, Moremana]

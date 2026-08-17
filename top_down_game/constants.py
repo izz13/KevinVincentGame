@@ -1,0 +1,3 @@
+SCREENWIDTH, SCREENHEIGHT = 800, 640
+
+forgecosts = [5, 10, 20, 25, ]
